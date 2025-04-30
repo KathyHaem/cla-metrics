@@ -261,7 +261,7 @@ if __name__ == "__main__":
         "--margin",
         type=str,
         default=None,
-        choices=["margin", "ratio", "absolute"]
+        choices=["margin", "ratio", "absolute"],
         help="Margin for xSIM calculation. See: https://aclanthology.org/P19-1309",
     )
     parser.add_argument(
