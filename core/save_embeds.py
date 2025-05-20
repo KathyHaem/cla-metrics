@@ -38,7 +38,7 @@ def encode_batch(batch, model, tokenizer, sent_rep, key="sentence"):
             mask = inputs["attention_mask"]
             for layer in range(model.config.num_hidden_layers):
                 hidden_states = outputs.hidden_states[layer]  # is layer 0 embeddings?
-                mean_rep = masked_mean(hidden_states, mask)
+                mean_rep = masked_mean(hidden_states, mask).cpu()
                 out_dict[f"mean_{layer}"] = mean_rep
 
     return out_dict

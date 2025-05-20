@@ -2,9 +2,14 @@ import argparse
 import pickle
 from collections import defaultdict
 
+import numpy as np
+import torch
+from torch.nn.functional import cosine_similarity
 from transformers import AutoConfig
 
+from anc.anc_scoring import anc_score
 from constants import ALL_LANGUAGES
+from xsim.xsim import x_sim, Margin
 
 
 def load_embeds(model_name, dataset_name):
@@ -15,9 +20,29 @@ def load_embeds(model_name, dataset_name):
     return embeds
 
 
-def calculate_score(src_layer, tgt_layer, score):
-    # TODO
-    pass
+def calculate_score(src_layer: torch.Tensor, tgt_layer: torch.Tensor, score: str):
+    if score == "anc":
+        return anc_score(src_layer, tgt_layer)
+    if score == "cosine":
+        score_value = cosine_similarity(src_layer, tgt_layer)
+        return score_value.mean().item()
+
+    src_layer = np.ndarray(src_layer)
+    tgt_layer = np.ndarray(tgt_layer)
+    if score == "dist":
+        # this is an xsim score, based on nearest neighbours -> needs faiss
+        err, nbex, augmented_report = x_sim(x=src_layer, y=tgt_layer, margin=Margin.DISTANCE.value)
+        print(err, nbex, augmented_report)  # need to take a look at this
+        return err
+    if score == "ratio":
+        err, nbex, augmented_report = x_sim(x=src_layer, y=tgt_layer, margin=Margin.RATIO.value)
+        print(err, nbex, augmented_report)  # need to take a look at this
+        return err
+    if score == "nn_abs":
+        # this is an xsim score, based on nearest neighbours but with cosine as criterion
+        err, nbex, augmented_report = x_sim(x=src_layer, y=tgt_layer, margin=Margin.ABSOLUTE.value)
+        print(err, nbex, augmented_report)  # need to take a look at this
+        return err
 
 
 def main(model, dataset, sent_rep, score):
@@ -30,12 +55,13 @@ def main(model, dataset, sent_rep, score):
         if src_lang not in embeds:
             continue
         src_embeds = embeds[src_lang]
+
         for tgt_lang in ALL_LANGUAGES:
             if tgt_lang not in embeds:
                 continue
-            tgt_embeds = embeds[tgt_lang]
             if src_lang == tgt_lang:
                 continue
+            tgt_embeds = embeds[tgt_lang]
 
             for layer in range(num_layers):
                 src_layer = src_embeds[f"{sent_rep}_{layer}"]
