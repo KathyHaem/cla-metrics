@@ -1,4 +1,6 @@
 import argparse
+import json
+import os
 import pickle
 from collections import defaultdict
 
@@ -45,12 +47,9 @@ def calculate_score(src_layer: torch.Tensor, tgt_layer: torch.Tensor, score: str
         return err
 
 
-def main(model, dataset, sent_rep, score):
+def collect_score(config, embeds, score, sent_rep):
     scores = defaultdict(list)  # keys are lang pairs, lists are layers
-    embeds = load_embeds(model, dataset)
-    config = AutoConfig.from_pretrained(model)
     num_layers = config.num_hidden_layers
-
     for src_lang in ALL_LANGUAGES:
         if src_lang not in embeds:
             continue
@@ -69,13 +68,32 @@ def main(model, dataset, sent_rep, score):
 
                 score_value = calculate_score(src_layer, tgt_layer, score)
                 scores[(src_lang, tgt_lang)].append(score_value)
+    return scores
+
+
+def main(model, dataset, sent_rep, requested_scores):
+    all_scores = {x: {} for x in requested_scores}
+
+    embeds = load_embeds(model, dataset)
+    config = AutoConfig.from_pretrained(model)
+    for score in requested_scores:
+        scores = collect_score(config, embeds, score, sent_rep)
+        all_scores[score] = scores
+
+    # actually save scores somewhere
+    model_short_name = model.split("/")[-1]
+    out_path = f"../scores/{dataset}/"
+    os.makedirs(out_path, exist_ok=True)
+    for score, scores in all_scores.items():
+        with open(f"{out_path}/{model_short_name}_{sent_rep}_{score}.json", "w") as fout:
+            json.dump(scores, fout)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calculate simple-ish CLA scores")
     parser.add_argument("--model", type=str, required=True, help="Model name. Assuming an HF decoder")
     parser.add_argument("--dataset", type=str, default="flores")
-    parser.add_argument("--score", type=str, default="cosine")  # anc, dist, ratio,...
+    parser.add_argument("--score", type=str, nargs="+", default=["cosine"])  # anc, dist, ratio,...
     parser.add_argument("--sent-rep", type=str, default="mean", help="How to sentence rep",
                         choices=["mean", "prompt"])
 
