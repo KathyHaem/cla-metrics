@@ -31,6 +31,23 @@ class Margin(Enum):
         return value in cls._value2member_map_
 
 
+def get_xsim_correct_rate(
+        x: tp.Union[str, np.ndarray],
+        y: tp.Union[str, np.ndarray],
+        margin: str = Margin.RATIO.value,
+        k: int = 4,
+        dim: int = 1024,
+        fp16: bool = False,
+        eval_text: str = None,
+        augmented_json: str = None,
+) -> float:
+    err, nbex, _ = x_sim(x, y, margin, k, dim, fp16, eval_text, augmented_json)
+    if nbex == 0:
+        raise ValueError("No examples to calculate precision.")
+    correct = nbex - err
+    return int(correct) / int(nbex)
+
+
 def x_sim(
         x: tp.Union[str, np.ndarray],
         y: tp.Union[str, np.ndarray],
@@ -162,4 +179,4 @@ def calculate_error(
     else:  # calc index error
         ref = np.linspace(0, nbex - 1, nbex).astype(int)  # [0, nbex)
         err = nbex - np.equal(closest_neighbor.reshape(nbex), ref).astype(int).sum()
-    return err, nbex, augmented_report
+    return err.item(), nbex, augmented_report
