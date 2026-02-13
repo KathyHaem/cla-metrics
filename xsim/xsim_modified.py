@@ -13,7 +13,10 @@
 #
 # Tool to calculate multilingual similarity error rate (xSIM)
 
+import faiss.contrib.torch_utils
 import faiss
+import torch
+import torch.nn.functional as F
 import numpy as np
 import typing as tp
 import os
@@ -31,26 +34,43 @@ class Margin(Enum):
         return value in cls._value2member_map_
 
 
-def xSIM(
-    x: tp.Union[str, np.ndarray],
-    y: tp.Union[str, np.ndarray],
-    margin: str = Margin.RATIO.value,
-    k: int = 4,
-    dim: int = 1024,
-    fp16: bool = False,
-    eval_text: str = None,
-    augmented_json: str = None,
+def get_xsim_correct_rate(
+        x: tp.Union[str, torch.Tensor],
+        y: tp.Union[str, torch.Tensor],
+        margin: str = Margin.RATIO.value,
+        k: int = 4,
+        dim: int = 1024,
+        fp16: bool = False,
+        eval_text: str = None,
+        augmented_json: str = None,
+) -> float:
+    err, nbex, _ = x_sim(x, y, margin, k, dim, fp16, eval_text, augmented_json)
+    if nbex == 0:
+        raise ValueError("No examples to calculate precision.")
+    correct = nbex - err
+    return int(correct) / int(nbex)
+
+
+def x_sim(
+        x: tp.Union[str, torch.Tensor],
+        y: tp.Union[str, torch.Tensor],
+        margin: str = Margin.RATIO.value,
+        k: int = 4,
+        dim: int = 1024,
+        fp16: bool = False,
+        eval_text: str = None,
+        augmented_json: str = None,
 ) -> tp.Tuple[int, int, tp.Dict[str, int]]:
     assert Margin.has_value(margin), f"Margin type: {margin}, is not supported."
-    if not isinstance(x, np.ndarray):
+    if isinstance(x, str):
         x = _load_embeddings(x, dim, fp16)
-    if not isinstance(y, np.ndarray):
+    if isinstance(y, str):
         y = _load_embeddings(y, dim, fp16)
     # calculate xSIM error
     return calculate_error(x, y, margin, k, eval_text, augmented_json)
 
 
-def _load_embeddings(infile: str, dim: int, fp16: bool = False) -> np.ndarray:
+def _load_embeddings(infile: str, dim: int, fp16: bool = False) -> torch.Tensor:
     assert os.path.isfile(infile), f"file: {infile} does not exist."
     emb = np.fromfile(infile, dtype=np.float16 if fp16 else np.float32)
     num_examples = emb.shape[0] // dim
@@ -61,15 +81,15 @@ def _load_embeddings(infile: str, dim: int, fp16: bool = False) -> np.ndarray:
 
 
 def score_margin(
-    Dxy: np.ndarray,
-    Ixy: np.ndarray,
-    Ax: np.ndarray,
-    Ay: np.ndarray,
-    margin: str,
-    k: int,
-) -> np.ndarray:
+        Dxy: torch.Tensor,
+        Ixy: torch.Tensor,
+        Ax: torch.Tensor,
+        Ay: torch.Tensor,
+        margin: str,
+        k: int,
+) -> torch.Tensor:
     nbex = Dxy.shape[0]
-    scores = np.zeros((nbex, k))
+    scores = torch.zeros((nbex, k))
     for i in range(nbex):
         for j in range(k):
             jj = Ixy[i, j]
@@ -82,14 +102,22 @@ def score_margin(
     return scores
 
 
-def _score_knn(x: np.ndarray, y: np.ndarray, k: int, margin: str) -> np.ndarray:
+def _score_knn(x: torch.Tensor, y: torch.Tensor, k: int, margin: str) -> torch.Tensor:
     nbex, dim = x.shape
+
     # create index
-    idx_x = faiss.IndexFlatIP(dim)
-    idx_y = faiss.IndexFlatIP(dim)
+    if isinstance(x, torch.Tensor) and x.is_cuda:
+        res = faiss.StandardGpuResources()
+        idx_x = faiss.GpuIndexFlatIP(res, dim)
+        idx_y = faiss.GpuIndexFlatIP(res, dim)
+    else:
+        idx_x = faiss.IndexFlatIP(dim)
+        idx_y = faiss.IndexFlatIP(dim)
+
     # L2 normalization needed for cosine distance
-    faiss.normalize_L2(x)
-    faiss.normalize_L2(y)
+    x = F.normalize(x, p=2, dim=1)
+    y = F.normalize(y, p=2, dim=1)
+
     idx_x.add(x)
     idx_y.add(y)
     if margin == Margin.ABSOLUTE.value:
@@ -103,11 +131,11 @@ def _score_knn(x: np.ndarray, y: np.ndarray, k: int, margin: str) -> np.ndarray:
         Avg_xy = Cos_xy.mean(axis=1)
         Avg_yx = Cos_yx.mean(axis=1)
 
-        scores = score_margin(Cos_xy, Idx_xy, Avg_xy, Avg_yx, margin, k)
+        scores = score_margin(Cos_xy, Idx_xy, Avg_xy, Avg_yx, margin, k).to(x.device)
 
         # find best
         best = scores.argmax(axis=1)
-        indices = np.zeros((nbex, 1), dtype=np.int32)
+        indices = torch.zeros((nbex, 1), dtype=torch.int32, device=x.device)
         for i in range(nbex):
             indices[i] = Idx_xy[i, best[i]]
     return indices
@@ -115,30 +143,30 @@ def _score_knn(x: np.ndarray, y: np.ndarray, k: int, margin: str) -> np.ndarray:
 
 def get_transform(augmented_json, closest_neighbor, src):
     if (
-        closest_neighbor in augmented_json
-        and augmented_json[closest_neighbor]["src"] == src
+            closest_neighbor in augmented_json
+            and augmented_json[closest_neighbor]["src"] == src
     ):
         return augmented_json[closest_neighbor]["errtype"]
     return "Misaligned"
 
 
 def calculate_error(
-    x: np.ndarray,
-    y: np.ndarray,
-    margin: str = None,
-    k: int = 4,
-    eval_text: str = None,
-    augmented_json: str = None,
+        x: torch.Tensor,
+        y: torch.Tensor,
+        margin: str = None,
+        k: int = 4,
+        eval_text: str = None,
+        augmented_json: str = None,
 ) -> tp.Tuple[int, int, tp.Dict[str, int]]:
     if augmented_json:
         with open(augmented_json) as f:
             augmented_json = json.load(f)
         assert (
-            x.shape[0] < y.shape[0]
+                x.shape[0] < y.shape[0]
         ), f"Shape mismatch: {x.shape[0]} >= target {y.shape[0]}"
     else:
         assert (
-            x.shape == y.shape
+                x.shape == y.shape
         ), f"number of source {x.shape} / target {y.shape} shapes mismatch, "
     nbex = x.shape[0]
     augmented_report = {}
@@ -160,6 +188,6 @@ def calculate_error(
                     )
                     augmented_report[transform] = augmented_report.get(transform, 0) + 1
     else:  # calc index error
-        ref = np.linspace(0, nbex - 1, nbex).astype(int)  # [0, nbex)
-        err = nbex - np.equal(closest_neighbor.reshape(nbex), ref).astype(int).sum()
-    return err, nbex, augmented_report
+        ref = torch.arange(nbex, dtype=torch.int, device=closest_neighbor.device) # [0, nbex)
+        err = nbex - (closest_neighbor.reshape(nbex) == ref).sum()
+    return err.item(), nbex, augmented_report

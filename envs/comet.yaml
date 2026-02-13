@@ -1,0 +1,8 @@
+name: cla-comet
+dependencies:
+  - python==3.12
+  - pip==25.2
+  - pip:
+    - torch
+    - unbabel-comet
+    - langcodes

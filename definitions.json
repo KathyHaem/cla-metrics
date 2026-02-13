@@ -1,0 +1,1217 @@
+{
+ "af": [
+  {
+   "label": "heelal",
+   "description": "al die planete, sterre en ruimtes, asook alle energie en materie",
+   "qid": 1
+  },
+  {
+   "label": "Aarde",
+   "description": "derde planeet in ons sonnestelsel, waar menslike lewe ontstaan het",
+   "qid": 2
+  },
+  {
+   "label": "lewe",
+   "description": "somtotaal van alle lewende wesens, of die toestand van volhoubare lewensfunksies",
+   "qid": 3
+  },
+  {
+   "label": "dood",
+   "description": "die einde van lewe van 'n mens of organisme, of 'n gebrek aan lewe of aktiwiteit in enige situasie",
+   "qid": 4
+  },
+  {
+   "label": "mens",
+   "description": "tweevoetige primaat van die soogdiergenus Homo en die spesie Homo sapiens",
+   "qid": 5
+  }
+ ],
+ "am": [
+  {
+   "label": "ጃፓን",
+   "description": "በምስራቅ እስያ ውስጥ ደሴት አገር",
+   "qid": 17
+  },
+  {
+   "label": "የተባበሩት ግዛቶች",
+   "description": "በሰሜን አሜሪካ ውስጥ አገር",
+   "qid": 30
+  },
+  {
+   "label": "ፊንላንድ",
+   "description": "በሰሜን አውሮፓ ውስጥ ያለ ሀገር",
+   "qid": 33
+  },
+  {
+   "label": "ዙሪክ",
+   "description": "በስዊዘርላንድ ውስጥ ትልቁ ከተማ",
+   "qid": 72
+  },
+  {
+   "label": "ቲም ባርነርስ ሊ",
+   "description": "ብሪታንያዊ የኮምፒተር ሳይንቲስት ፣ የአለም አቀፍ ድር ፈጣሪ",
+   "qid": 80
+  }
+ ],
+ "ar": [
+  {
+   "label": "فضاء كوني",
+   "description": "مجمل الزمكان المستمر الذي نعيش به بما في ذلك الكواكب، والأقمار و الكواكب الصغيرة، والنجوم و المجرات ومحتويات الفضاء الخارجي بين المجرات، و",
+   "qid": 1
+  },
+  {
+   "label": "الأرض",
+   "description": "الكوكب الثالث في المجموعة الشمسية",
+   "qid": 2
+  },
+  {
+   "label": "حياة",
+   "description": "مادة قادرة على استخراج الطاقة من البيئة المحيطة من أجل التكاثر",
+   "qid": 3
+  },
+  {
+   "label": "موت",
+   "description": "توقف لا رجعة فيه لجميع الوظائف الحيوية التي تدعم الكائن الحي",
+   "qid": 4
+  },
+  {
+   "label": "إنسان",
+   "description": "الاسم الشائع للإنسان العاقل، الأنواع الفريدة الموجودة من جنس الإنسان",
+   "qid": 5
+  }
+ ],
+ "az": [
+  {
+   "label": "kainat",
+   "description": "bütün kosmos və ona daxil olanlar",
+   "qid": 1
+  },
+  {
+   "label": "Yer",
+   "description": "Günəş sistemində Günəşdən uzaqlığına görə üçüncü planet",
+   "qid": 2
+  },
+  {
+   "label": "ölüm",
+   "description": "həyati funksiyaların daimi olaraq kəsilməsi",
+   "qid": 4
+  },
+  {
+   "label": "insan",
+   "description": "Homo sapiensin ümumi adı və həmin növün yeganə mövcud növü (p31)",
+   "qid": 5
+  },
+  {
+   "label": "Kanada",
+   "description": "Şimali Amerika dövləti",
+   "qid": 16
+  }
+ ],
+ "bg": [
+  {
+   "label": "Вселена",
+   "description": "Целия пространствено-времеви континиум, в който съществуваме, заедно с всички форми на енергия и материя в него – планети, звезди, галактик",
+   "qid": 1
+  },
+  {
+   "label": "Земя",
+   "description": "третата най-близка планета до Слънцето в Слънчевата система",
+   "qid": 2
+  },
+  {
+   "label": "смърт",
+   "description": "необратимо прекратяване, свършек на жизнената дейност",
+   "qid": 4
+  },
+  {
+   "label": "човек",
+   "description": "общоприетото име на Homo sapiens, единственият оцелял представител на рода Homo",
+   "qid": 5
+  },
+  {
+   "label": "щастие",
+   "description": "ментално или емоционално състояние, характеризирано с приятни емоции",
+   "qid": 8
+  }
+ ],
+ "bn": [
+  {
+   "label": "মহাবিশ্ব",
+   "description": "স্থান, সময়, পদার্থ এবং শক্তি নিয়ে গঠিত সমগ্রতা",
+   "qid": 1
+  },
+  {
+   "label": "পৃথিবী",
+   "description": "সৌরজগতের তৃতীয় গ্রহ",
+   "qid": 2
+  },
+  {
+   "label": "জীবন",
+   "description": "একটি অবস্থা, যা একটি অর্গানিজমকে জড় পদার্থ (প্রাণহীন) ও মৃত অবস্থা থেকে পৃথক করে",
+   "qid": 3
+  },
+  {
+   "label": "মৃত্যু",
+   "description": "জীবনের সমাপ্তি",
+   "qid": 4
+  },
+  {
+   "label": "মানুষ",
+   "description": "মানব সমাজের একজন সদস্য হিসেবে মানুষ, হোমো সেপিয়েন্সের সাধারণ নাম",
+   "qid": 5
+  }
+ ],
+ "cs": [
+  {
+   "label": "vesmír",
+   "description": "souhrnné označení veškeré hmoty, energie a časoprostoru",
+   "qid": 1
+  },
+  {
+   "label": "Země",
+   "description": "třetí planeta od Slunce ve Sluneční soustavě",
+   "qid": 2
+  },
+  {
+   "label": "život",
+   "description": "schopnost získávat energii ze svého okolí pro účely rozmnožování",
+   "qid": 3
+  },
+  {
+   "label": "smrt",
+   "description": "stav organismu po ukončení života",
+   "qid": 4
+  },
+  {
+   "label": "člověk",
+   "description": "člen lidské společnosti, jediný žijící druh rodu Homo",
+   "qid": 5
+  }
+ ],
+ "cy": [
+  {
+   "label": "bydysawd",
+   "description": "cyfanswm y gofod a'r holl gynnwys",
+   "qid": 1
+  },
+  {
+   "label": "y Ddaear",
+   "description": "y drydedd blaned o'r Haul yng Nghysawd yr Haul",
+   "qid": 2
+  },
+  {
+   "label": "bywyd",
+   "description": "mater sy'n gallu echdynnu ynni o'r amgylchedd i'w ddyblygu",
+   "qid": 3
+  },
+  {
+   "label": "bod dynol",
+   "description": "rhywogaeth o deulu Hominidae, rhywogaeth unigryw o'r genws Homo",
+   "qid": 5
+  },
+  {
+   "label": "Affrica",
+   "description": "Cyfandir yn Hemisffer y De ac y Gogledd",
+   "qid": 15
+  }
+ ],
+ "da": [
+  {
+   "label": "Universet",
+   "description": "totaliteten af alt der eksisterer, inklusiv planeter, stjerner, galakser, det intergalaktiske rum, og alt stof og energi",
+   "qid": 1
+  },
+  {
+   "label": "Jorden",
+   "description": "tredje planet i Solsystemet",
+   "qid": 2
+  },
+  {
+   "label": "liv",
+   "description": "egenskab, at alle organismer har",
+   "qid": 3
+  },
+  {
+   "label": "død",
+   "description": "betegnelsen for afslutningen på biologiske organismers liv",
+   "qid": 4
+  },
+  {
+   "label": "menneske",
+   "description": "menneske som medlem af det menneskelige samfund; almindeligt navn for Homo sapiens",
+   "qid": 5
+  }
+ ],
+ "de": [
+  {
+   "label": "Universum",
+   "description": "Gesamtheit von Raum, Zeit, Energie und Materie",
+   "qid": 1
+  },
+  {
+   "label": "Erde",
+   "description": "dritter Planet von der Sonne aus im Sonnensystem",
+   "qid": 2
+  },
+  {
+   "label": "Leben",
+   "description": "Fähigkeit, geboren zu werden, sich biologisch zu entwickeln, sich fortzupflanzen und zu sterben",
+   "qid": 3
+  },
+  {
+   "label": "Tod",
+   "description": "endgültiger Verlust der Lebensfunktionen",
+   "qid": 4
+  },
+  {
+   "label": "Mensch",
+   "description": "höheres Säugetier aus der Ordnung der Primaten",
+   "qid": 5
+  }
+ ],
+ "el": [
+  {
+   "label": "σύμπαν",
+   "description": "το σύνολο των πραγμάτων που υπάρχουν",
+   "qid": 1
+  },
+  {
+   "label": "Γη",
+   "description": "τρίτος κατά σειρά κοντινότερος στον Ήλιο πλανήτης του Ηλιακού Συστήματος",
+   "qid": 2
+  },
+  {
+   "label": "ζωή",
+   "description": "χαρακτηριστικό που διακρίνει αντικείμενα που έχουν σηματοδότηση και αυτοδιατηρούμενες λειτουργίες από αυτά που δεν έχουν",
+   "qid": 3
+  },
+  {
+   "label": "θάνατος",
+   "description": "μόνιμος τερματισμός της ζωής",
+   "qid": 4
+  },
+  {
+   "label": "άνθρωπος",
+   "description": "είδος της οικογένειας Hominidae, μοναδικό επιζών είδος του γένους Homo",
+   "qid": 5
+  }
+ ],
+ "en": [
+  {
+   "label": "Universe",
+   "description": "totality consisting of space, time, matter and energy",
+   "qid": 1
+  },
+  {
+   "label": "Earth",
+   "description": "third planet from the Sun in the Solar System",
+   "qid": 2
+  },
+  {
+   "label": "life",
+   "description": "matter capable of extracting energy from the environment for replication",
+   "qid": 3
+  },
+  {
+   "label": "death",
+   "description": "permanent cessation of vital functions",
+   "qid": 4
+  },
+  {
+   "label": "human",
+   "description": "any single member of Homo sapiens, unique extant species of the genus Homo",
+   "qid": 5
+  }
+ ],
+ "es": [
+  {
+   "label": "Universo",
+   "description": "la totalidad formada por el espacio, el tiempo, la materia y la energía",
+   "qid": 1
+  },
+  {
+   "label": "Tierra",
+   "description": "tercer planeta desde el Sol en el Sistema Solar",
+   "qid": 2
+  },
+  {
+   "label": "vida",
+   "description": "materia capaz de extraer energía del medio ambiente para replicarse",
+   "qid": 3
+  },
+  {
+   "label": "muerte",
+   "description": "cese irreversible de todas las funciones biológicas que sustentan un organismo",
+   "qid": 4
+  },
+  {
+   "label": "ser humano",
+   "description": "nombre común de Homo sapiens, única especie existente del género Homo",
+   "qid": 5
+  }
+ ],
+ "fa": [
+  {
+   "label": "گیتی",
+   "description": "مجموعه سیاره‌ها، ستارگان، کهکشان‌ها، فضای میان کهکشان‌ها و همه ماده و انرژی",
+   "qid": 1
+  },
+  {
+   "label": "زمین",
+   "description": "سومین رستاد در سامانه خورشیدی",
+   "qid": 2
+  },
+  {
+   "label": "مرگ",
+   "description": "پایان حیات زیستی و از گیتی رفتن",
+   "qid": 4
+  },
+  {
+   "label": "انسان",
+   "description": "گونه‌ای از پستانداران",
+   "qid": 5
+  },
+  {
+   "label": "خوشحالی",
+   "description": "احساس هیجان و شادی و رضایت و آسایش",
+   "qid": 8
+  }
+ ],
+ "fi": [
+  {
+   "label": "maailmankaikkeus",
+   "description": "avaruuden ja siinä olevan aineen ja energian muodostama kokonaisuus",
+   "qid": 1
+  },
+  {
+   "label": "Maa",
+   "description": "Aurinkokunnan planeetta, kolmas planeetta Auringosta",
+   "qid": 2
+  },
+  {
+   "label": "elämä",
+   "description": "eliöiden biologinen tila",
+   "qid": 3
+  },
+  {
+   "label": "kuolema",
+   "description": "elämän peruuttamaton päättyminen",
+   "qid": 4
+  },
+  {
+   "label": "ihminen",
+   "description": "älykäs nisäkäslaji isojen ihmisapinoiden heimossa",
+   "qid": 5
+  }
+ ],
+ "fr": [
+  {
+   "label": "univers",
+   "description": "ensemble de tout ce qui existe : énergie, espace, temps et matière",
+   "qid": 1
+  },
+  {
+   "label": "Terre",
+   "description": "troisième planète à partir du Soleil dans le système solaire",
+   "qid": 2
+  },
+  {
+   "label": "vie",
+   "description": "phénomène qui permet à un organisme d'extraire de l'énergie à partir de son environnement afin de se reproduire",
+   "qid": 3
+  },
+  {
+   "label": "mort",
+   "description": "état de ce dont les fonctions vitales se sont arrêtées",
+   "qid": 4
+  },
+  {
+   "label": "être humain",
+   "description": "individu appartenant à l’espèce Homo sapiens, la seule espèce restante du genre Homo – distinct de « humain fictif » et de « humain possiblement fictif »",
+   "qid": 5
+  }
+ ],
+ "he": [
+  {
+   "label": "היקום",
+   "description": "מכלול הפלנטות, כוכבים, גלקסיות, החלל הבין-גלקטי, או כל החומר והאנרגיה",
+   "qid": 1
+  },
+  {
+   "label": "כדור הארץ",
+   "description": "כוכב הלכת השלישי מהשמש במערכת השמש",
+   "qid": 2
+  },
+  {
+   "label": "חיים",
+   "description": "תכונה מהותית המאפיינת אורגניזמים ביולוגיים",
+   "qid": 3
+  },
+  {
+   "label": "מוות",
+   "description": "מצב שבו גוף חי חדל לחיות",
+   "qid": 4
+  },
+  {
+   "label": "אדם",
+   "description": "מין בסוג אדם",
+   "qid": 5
+  }
+ ],
+ "hi": [
+  {
+   "label": "ब्रह्माण्ड",
+   "description": "सम्पूर्ण समय और अंतरिक्ष और उसकी अंतर्वस्तु को कहते हैं। ज्ञात एवं अज्ञात विश्व",
+   "qid": 1
+  },
+  {
+   "label": "पृथ्वी",
+   "description": "सौर मण्डल में तीसरे नम्बर का नीला ग्रह",
+   "qid": 2
+  },
+  {
+   "label": "जीवन",
+   "description": "जन्म से मृत्यु के बीच की स्थिति",
+   "qid": 3
+  },
+  {
+   "label": "मृत्यु",
+   "description": "जीव के जीवन की स्थायी समाप्ति",
+   "qid": 4
+  },
+  {
+   "label": "मनुष्य",
+   "description": "होमो-सैपीयंज़ स्तनपायी जो दो पैर पर चलता है",
+   "qid": 5
+  }
+ ],
+ "hu": [
+  {
+   "label": "világegyetem",
+   "description": "Minden létező összegzése",
+   "qid": 1
+  },
+  {
+   "label": "Föld",
+   "description": "a Naprendszer harmadik bolygója",
+   "qid": 2
+  },
+  {
+   "label": "élet",
+   "description": "élő szervezetek létezési módja",
+   "qid": 3
+  },
+  {
+   "label": "halál",
+   "description": "élő szervezet működésének leállása",
+   "qid": 4
+  },
+  {
+   "label": "ember",
+   "description": "a Hominidae családba tartozó főemlősfaj, a Homo nem egyetlen jelenkori képviselője",
+   "qid": 5
+  }
+ ],
+ "hy": [
+  {
+   "label": "Երկիր",
+   "description": "Արեգակնային համակարգի երրորդ մոլորակը:",
+   "qid": 2
+  },
+  {
+   "label": "մարդ",
+   "description": "հոմինիդների ընտանիքի ներկայացուցիչներից մեկը՝ մարդկային ընտանիքի միակ գոյատևած տեսակը",
+   "qid": 5
+  },
+  {
+   "label": "տրիսկաիդեկաֆոբիա",
+   "description": "վախ 13 թվից",
+   "qid": 13
+  },
+  {
+   "label": "Կանադա",
+   "description": "երկիր Հյուսիսային Ամերիկայում",
+   "qid": 16
+  },
+  {
+   "label": "Ճապոնիա",
+   "description": "պետություն է Ասիայի խաղաղօվկիանոսյան ափերից դեպի արևելք գտնվող կղզիների վրա",
+   "qid": 17
+  }
+ ],
+ "id": [
+  {
+   "label": "alam semesta",
+   "description": "keseluruhan planet, bintang, galaksi, ruang antargalaksi, atau semua materi atau semua energi",
+   "qid": 1
+  },
+  {
+   "label": "Bumi",
+   "description": "planet ketiga di Tata Surya",
+   "qid": 2
+  },
+  {
+   "label": "kehidupan",
+   "description": "bentuk materi yang dapat mengambil energi dari lingkungan untuk replikasi",
+   "qid": 3
+  },
+  {
+   "label": "kematian",
+   "description": "penghentian permanen fungsi vital",
+   "qid": 4
+  },
+  {
+   "label": "manusia",
+   "description": "nama umum Homo sapiens, satu-satunya spesies genus Homo yang masih ada",
+   "qid": 5
+  }
+ ],
+ "is": [
+  {
+   "label": "Alheimurinn",
+   "description": "hugtak sem nær yfir allt í tíma og rúmi",
+   "qid": 1
+  },
+  {
+   "label": "Jörðin",
+   "description": "þriðja pláneta sólkerfisins",
+   "qid": 2
+  },
+  {
+   "label": "líf",
+   "description": "eigind sem aðgreinir lífveru frá lífvana efni",
+   "qid": 3
+  },
+  {
+   "label": "maður",
+   "description": "mannapi af ættflokknum Homini og ættkvíslinni Homo",
+   "qid": 5
+  },
+  {
+   "label": "Kanada",
+   "description": "land í Norður-Ameríku",
+   "qid": 16
+  }
+ ],
+ "it": [
+  {
+   "label": "universo",
+   "description": "insieme dei pianeti, stelle, galassie, spazio cosmico, oppure tutta la materia oppure tutta l'energia",
+   "qid": 1
+  },
+  {
+   "label": "Terra",
+   "description": "terzo pianeta del sistema solare",
+   "qid": 2
+  },
+  {
+   "label": "vita",
+   "description": "condizione propria della materia vivente",
+   "qid": 3
+  },
+  {
+   "label": "morte",
+   "description": "cessazione delle funzioni vitali in un essere vivente",
+   "qid": 4
+  },
+  {
+   "label": "umano",
+   "description": "nome comune della specie Homo sapiens, l'unica esistente del genere Homo",
+   "qid": 5
+  }
+ ],
+ "ja": [
+  {
+   "label": "宇宙",
+   "description": "時間と空間、物質およびエネルギーの総体",
+   "qid": 1
+  },
+  {
+   "label": "生命",
+   "description": "生物学的現象を持つ物質を、そうでない物質と区別する性質",
+   "qid": 3
+  },
+  {
+   "label": "死",
+   "description": "生命活動が恒久的に停止すること",
+   "qid": 4
+  },
+  {
+   "label": "幸福",
+   "description": "心が満ち足りていること",
+   "qid": 8
+  },
+  {
+   "label": "13恐怖症",
+   "description": "西洋において最も忌避される数字である\"13\"に対する恐怖",
+   "qid": 13
+  }
+ ],
+ "jv": [
+  {
+   "label": "Alam semesta",
+   "description": "samubarang sing ana ing ruwang lan wektu",
+   "qid": 1
+  },
+  {
+   "label": "Bumi",
+   "description": "planit katelu saka Srengéngé ing Tata Surya",
+   "qid": 2
+  },
+  {
+   "label": "manungsa",
+   "description": "aran lumrah kanggo Homo sapiens, spésiès-spésiès jroning génus Homo",
+   "qid": 5
+  },
+  {
+   "label": "Triskaidekafobia",
+   "description": "wedi marang angka 13",
+   "qid": 13
+  },
+  {
+   "label": "Afrika",
+   "description": "bawana ing kawasan afro-eurasia",
+   "qid": 15
+  }
+ ],
+ "ka": [
+  {
+   "label": "სამყარო",
+   "description": "მთელი სივრცის, დროის და მათი შემცველობის ერთობლიობა",
+   "qid": 1
+  },
+  {
+   "label": "დედამიწა",
+   "description": "მზის სისტემის ერთ-ერთი პლანეტა, მზიდან დაშორების მიხედვით მესამე",
+   "qid": 2
+  },
+  {
+   "label": "სიცოცხლე",
+   "description": "მასალა, რომელსაც შეუძლია გარემოდან ენერგია მოიპოვოს და გამრავლდეს",
+   "qid": 3
+  },
+  {
+   "label": "სიკვდილი",
+   "description": "ბიოლოგიური ორგანიზმის სიცოცხლის სამუდამო დასასრული",
+   "qid": 4
+  },
+  {
+   "label": "ადამიანი",
+   "description": "ჰომინიდების ოჯახის ერთ-ერთი წარმომადგენელი, ადამიანების გვარის ერთადერთი შემორჩენილი სახეობ",
+   "qid": 5
+  }
+ ],
+ "km": [
+  {
+   "label": "កាណាដា",
+   "description": "ប្រទេសនៅទ្វីបអាមេរិកខាងជើង",
+   "qid": 16
+  },
+  {
+   "label": "លីទុយអានី",
+   "description": "ប្រទេសនៅតំបន់បាល់ទិកនៃទ្វីបអឺរ៉ុប",
+   "qid": 37
+  },
+  {
+   "label": "សាន់ហ្វ្រាន់ស៊ីស្កូ",
+   "description": "ទីក្រុងមួយនិងប្រទេសមួយក្នុងរដ្ឋកាលីហ្វ័រញ៉ា សហរដ្ឋអាមេរិក",
+   "qid": 62
+  },
+  {
+   "label": "ឡូស​អាន់​ជ័រ​លេស",
+   "description": "រដ្ឋនៅក្នុងរដ្ឋកាលីហ្វញ៉ានៃសហរដ្ឋអាមេរិក",
+   "qid": 65
+  },
+  {
+   "label": "អេហ្ស៊ីប",
+   "description": "ប្រទេសអធិបតេយ្យភាពរវាងអាហ្វ្រិកខាងជើងនិងអាស៊ី",
+   "qid": 79
+  }
+ ],
+ "kn": [
+  {
+   "label": "ಬ್ರಹ್ಮಾಂಡ",
+   "description": "ಆಕಾಶಗಂಗೆ, ಕ್ಷೀರಪಥ, ಮಿಲ್ಕೀ ವೇ, ನೀಹಾರಕ(ನೀಹಾರಿಕೆ) ಮತ್ತು ಸೂರ್ಯಮಂಡಲ ಇರುವ ನಕ್ಷತ್ರ ಲೋಕ",
+   "qid": 1
+  },
+  {
+   "label": "ಭೂಮಿ",
+   "description": "ಸೌರಮಂಡಲದಲ್ಲಿರುವ ಗ್ರಹಗಳಲ್ಲಿ ಸೂರ್ಯನಿಗೆ ಸಮೀಪದಲ್ಲಿರುವ ಮೂರನೆಯ ಗ್ರಹವಾಗಿದೆ.",
+   "qid": 2
+  },
+  {
+   "label": "ಜೀವನ",
+   "description": "ಜೀವನವೆಂದರೆ ಜೈವಿಕ ಜಗತ್ತಿನ ವ್ಯಾಪಾರ, ಹುಟ್ಟು ಮತ್ತು ಸಾವು ಇವುಗಳ ನಡುವೆ ಜೀವಿಗಳ ಅಭಿವೃಧ್ಧಿ ಮತ್ತು ಬದುಕಿನ",
+   "qid": 3
+  },
+  {
+   "label": "ಮರಣ",
+   "description": "ಒಂದು ಜೀವಿಯ ಜೈವಿಕ ಕ್ರಿಯೆಯ ಸಮಾಪ್ತಿಯ ಹಂತ; ಜೀವನದ ಕೊನೆ;",
+   "qid": 4
+  },
+  {
+   "label": "ಮಾನವ",
+   "description": "ಹೋಮೋ ಸೇಪಿಯನ್ಸ್‍ನ ಸಾಮಾನ್ಯ ಹೆಸರು",
+   "qid": 5
+  }
+ ],
+ "ko": [
+  {
+   "label": "우주",
+   "description": "무한한 시간과 모든 물질을 포함하고 있는 끝없는 공간의 총체",
+   "qid": 1
+  },
+  {
+   "label": "생명",
+   "description": "생물과 무생물을 구별하는 특성",
+   "qid": 3
+  },
+  {
+   "label": "죽음",
+   "description": "생명체의 삶이 끝나는 것, 생명활동이 정지되어 다시 원상태로 돌아오지 않는 생물의 상태로서 생(生)의 종말을 가리키는 용어",
+   "qid": 4
+  },
+  {
+   "label": "행복",
+   "description": "욕망이 충족되어 만족하거나 즐거움을 느끼는 상태",
+   "qid": 8
+  },
+  {
+   "label": "13 공포증",
+   "description": "숫자 13을 불길하게 생각하는 것으로, 보통 미신으로 간주됨",
+   "qid": 13
+  }
+ ],
+ "lt": [
+  {
+   "label": "Žemė",
+   "description": "trečia planeta nuo Saulės Saulės sistemoje",
+   "qid": 2
+  },
+  {
+   "label": "žmogus",
+   "description": "dvikojis primatas, priklausantis hominidų šeimai ir žinduolių klasei.",
+   "qid": 5
+  },
+  {
+   "label": "laimė",
+   "description": "pasitenkinimo, gerovės, gyvenimo džiaugsmo būvis.",
+   "qid": 8
+  },
+  {
+   "label": "Kanada",
+   "description": "valstybė Šiaurės Amerikoje",
+   "qid": 16
+  },
+  {
+   "label": "Jungtinės Amerikos Valstijos",
+   "description": "valstybė Šiaurės Amerikoje",
+   "qid": 30
+  }
+ ],
+ "ml": [
+  {
+   "label": "പ്രപഞ്ചം",
+   "description": "ഭൗതികമായി നിലനിൽക്കുന്ന എല്ലാം ചേർന്നതാണ് പ്രപഞ്ചം",
+   "qid": 1
+  },
+  {
+   "label": "ഭൂമി",
+   "description": "സൗരയൂഥത്തിൽ സുര്യനിൽ നിന്ന് മൂന്നാമത്തെ ഗ്രഹം",
+   "qid": 2
+  },
+  {
+   "label": "ജീവൻ",
+   "description": "ജനനം മുതൽ മരണം വരെയുള്ള അവസ്ഥ",
+   "qid": 3
+  },
+  {
+   "label": "മരണം",
+   "description": "ഒരു സജീവ വസ്തുവിന്റെ ജീവിതം അവസാനിക്കുന്നതിനെയാണ് മരണം എന്ന് പറയുന്നത്",
+   "qid": 4
+  },
+  {
+   "label": "മനുഷ്യൻ",
+   "description": "ഹോമോ എന്ന ജെനുസിൽ ഇന്ന് ജീവിച്ചിരിക്കുന്ന ഏക ജീവിയാണ് മനുഷ്യൻ",
+   "qid": 5
+  }
+ ],
+ "mr": [
+  {
+   "label": "पृथ्वी",
+   "description": "सौर मंडळ मध्ये सूर्या पासून तिसरा ग्रह",
+   "qid": 2
+  },
+  {
+   "label": "मृत्यू",
+   "description": "जीव टिकवून ठेवणाऱ्या सर्व जैविक कार्यांची अपरिवर्तनीय समाप्ती",
+   "qid": 4
+  },
+  {
+   "label": "मानव",
+   "description": "होमो-सैपीयंज़ स्तनपायी जो दोन पायांवर चालतो.",
+   "qid": 5
+  },
+  {
+   "label": "कॅनडा",
+   "description": "उत्तर अमेरिका खंडाच्या उत्तरेस असलेला देश",
+   "qid": 16
+  },
+  {
+   "label": "जपान",
+   "description": "पूर्व आशियातील सविधनिक राजेशाही",
+   "qid": 17
+  }
+ ],
+ "nl": [
+  {
+   "label": "heelal",
+   "description": "alle materie en energie binnen het gehele ruimte-tijdcontinuüm waarin wij bestaan",
+   "qid": 1
+  },
+  {
+   "label": "Aarde",
+   "description": "derde planeet in het zonnestelsel",
+   "qid": 2
+  },
+  {
+   "label": "leven",
+   "description": "eigenschap van organismen die zich onder andere kunnen voortplanten",
+   "qid": 3
+  },
+  {
+   "label": "dood",
+   "description": "verlies van voor een levend organisme typische levensfuncties, als groei en metabolisme",
+   "qid": 4
+  },
+  {
+   "label": "mens",
+   "description": "tweevoetige primatensoort uit de familie van de hominidae",
+   "qid": 5
+  }
+ ],
+ "pl": [
+  {
+   "label": "wszechświat",
+   "description": "rzeczywistość fizyczna, cała czasoprzestrzeń",
+   "qid": 1
+  },
+  {
+   "label": "Ziemia",
+   "description": "trzecia planeta od Słońca",
+   "qid": 2
+  },
+  {
+   "label": "życie",
+   "description": "ogół procesów życiowych organizmów",
+   "qid": 3
+  },
+  {
+   "label": "śmierć",
+   "description": "ustanie oznak życia",
+   "qid": 4
+  },
+  {
+   "label": "człowiek",
+   "description": "nazwa zwyczajowa Homo sapiens, unikalny nadal istniejący gatunek rodzaju Homo",
+   "qid": 5
+  }
+ ],
+ "pt": [
+  {
+   "label": "universo",
+   "description": "tudo o que existe fisicamente, a totalidade do espaço e tempo e todas as formas de matéria e energia",
+   "qid": 1
+  },
+  {
+   "label": "Terra",
+   "description": "terceiro planeta a partir do Sol no Sistema Solar",
+   "qid": 2
+  },
+  {
+   "label": "vida",
+   "description": "condição própria dos seres vivos",
+   "qid": 3
+  },
+  {
+   "label": "morte",
+   "description": "processo de cessamento irreversível das atividades biológicas do organismo em seres vivos",
+   "qid": 4
+  },
+  {
+   "label": "humano",
+   "description": "único membro vivo da espécie Homo sapiens",
+   "qid": 5
+  }
+ ],
+ "ru": [
+  {
+   "label": "Вселенная",
+   "description": "фундаментальное понятие в астрономии и философии, обозначающее совокупность всего, что существует",
+   "qid": 1
+  },
+  {
+   "label": "Земля",
+   "description": "третья от Солнца планета в Солнечной системе",
+   "qid": 2
+  },
+  {
+   "label": "жизнь",
+   "description": "совокупность биохимических процессов, позволяющих организмам использовать энергию из окружающей среды для развития и размножения",
+   "qid": 3
+  },
+  {
+   "label": "смерть",
+   "description": "полное прекращение жизнедеятельности организма",
+   "qid": 4
+  },
+  {
+   "label": "человек",
+   "description": "общественное существо, обладающее разумом и сознанием; субъект, относящийся к виду Человек разумный",
+   "qid": 5
+  }
+ ],
+ "sw": [
+  {
+   "label": "Dunia",
+   "description": "sayari ya tatu kutoka kwenye Jua katika Mfumo wa Jua",
+   "qid": 2
+  },
+  {
+   "label": "Uhai",
+   "description": "jambo linaloweza kutoa nishati kutoka kwa mazingira kwa ajili ya kurudia",
+   "qid": 3
+  },
+  {
+   "label": "furaha",
+   "description": "Hali ya kuwa na hisia za kupendeza",
+   "qid": 8
+  },
+  {
+   "label": "triskaidekafobia",
+   "description": "kuogopa namba ya kumi na tatu",
+   "qid": 13
+  },
+  {
+   "label": "Kanada",
+   "description": "nchi katika Amerika Kaskazini",
+   "qid": 16
+  }
+ ],
+ "ta": [
+  {
+   "label": "அண்டம்",
+   "description": "வெளி மற்றும் காலம் ஆகியவற்றின் முழுமை",
+   "qid": 1
+  },
+  {
+   "label": "புவி",
+   "description": "சூரியனிலிருந்து மூன்றாவதாக உள்ள கோள். அண்டத்தில் உயிரிகள் இருப்பதாக அறியப்படும் ஒரே இடம்",
+   "qid": 2
+  },
+  {
+   "label": "உயிர்",
+   "description": "உடலை இயங்கச் செய்யும் ஆற்றல்",
+   "qid": 3
+  },
+  {
+   "label": "இறப்பு",
+   "description": "உயிரியற் செயற்பாடுகள் நிரந்தரமாக நின்றுவிடுவது",
+   "qid": 4
+  },
+  {
+   "label": "மனிதர்",
+   "description": "இருகால் பாலூட்டி",
+   "qid": 5
+  }
+ ],
+ "te": [
+  {
+   "label": "విశ్వం",
+   "description": "గ్రహాలు, నక్షత్రాలు, పాలపుంతలు, అంతరిక్షం, సమస్త పదార్థాలు, సమస్త శక్తులన్నీ",
+   "qid": 1
+  },
+  {
+   "label": "భూమి",
+   "description": "సౌర మండలంలో మూడవ గ్రహం",
+   "qid": 2
+  },
+  {
+   "label": "జీవం",
+   "description": "పకృతి నుండి శక్తిని స్వీకరించి పునరుత్పత్తి చేసే పదార్థం",
+   "qid": 3
+  },
+  {
+   "label": "మరణం",
+   "description": "జీవిలోని కీలక వ్యవస్థలన్నీ శాశ్వతంగా పని చెయ్యడం ఆగిపోవడం",
+   "qid": 4
+  },
+  {
+   "label": "మానవుడు",
+   "description": "హోమో సేపియన్స్ జాతి జీవుల సాధారణ నామం",
+   "qid": 5
+  }
+ ],
+ "th": [
+  {
+   "label": "เอกภพ",
+   "description": "ที่อยู่ของอวกาศ เวลา สสาร และพลังงาน",
+   "qid": 1
+  },
+  {
+   "label": "โลก",
+   "description": "ดาวเคราะห์ในระบบสุริยะ โดยอยู่ห่างจากดวงอาทิตย์เป็นลำดับที่สาม",
+   "qid": 2
+  },
+  {
+   "label": "ชีวิต",
+   "description": "สถานะที่แยกสิ่งมีชีวิตหรืออินทรีย์ออกจากสิ่งไม่มีชีวิตหรืออนินทรีย์และสิ่งมีชีวิตที่ต",
+   "qid": 3
+  },
+  {
+   "label": "ความตาย",
+   "description": "การสูญเสียชีวิตอย่างถาวร",
+   "qid": 4
+  },
+  {
+   "label": "มนุษย์",
+   "description": "ชื่อเรียกของโฮโมเซเปียนส์ สปีชีส์ในสกุลโฮโม",
+   "qid": 5
+  }
+ ],
+ "tl": [
+  {
+   "label": "sansinukob",
+   "description": "planeta, mga bituin, mga galaksiya, mga nilalaman ng intergalaktikong kalawakan, at lahat ng materya at enerhiya",
+   "qid": 1
+  },
+  {
+   "label": "Daigdig",
+   "description": "pangatlong planeta mula sa Araw",
+   "qid": 2
+  },
+  {
+   "label": "buhay",
+   "description": "ang mga bagay na may kakayahan kumuha ng enerhiya mula sa kapaligiran nito para sa pagpaparami",
+   "qid": 3
+  },
+  {
+   "label": "kamatayan",
+   "description": "wakas ng buhay o pag-iral",
+   "qid": 4
+  },
+  {
+   "label": "tao",
+   "description": "espesye ng hominid sa henus na Homo",
+   "qid": 5
+  }
+ ],
+ "tr": [
+  {
+   "label": "evren",
+   "description": "uzay, zaman ve maddeden oluşan bütünlük",
+   "qid": 1
+  },
+  {
+   "label": "Dünya",
+   "description": "Güneş Sistemi'nde Güneş'e en yakın üçüncü gezegen",
+   "qid": 2
+  },
+  {
+   "label": "yaşam",
+   "description": "biyolojik süreçler gösteren canlıların bir özelliği",
+   "qid": 3
+  },
+  {
+   "label": "ölüm",
+   "description": "yaşamsal fonksiyonların kalıcı olarak durması",
+   "qid": 4
+  },
+  {
+   "label": "insan",
+   "description": "Homo cinsinin mevcut tek türü olan Homo sapiens'in her bir üyesi",
+   "qid": 5
+  }
+ ],
+ "ur": [
+  {
+   "label": "زمین",
+   "description": "نظامِ شمسی میں سورج کا تیسرا نزدیک ترین سیارہ",
+   "qid": 2
+  },
+  {
+   "label": "حیات",
+   "description": "زندگی تمامتر حیوی (vital) مظاہر کے ایک جسم میں جمع ہوجانے کا نام ہے۔",
+   "qid": 3
+  },
+  {
+   "label": "افریقا",
+   "description": "کرہ ارض کا دوسرا سب سے بڑا براعظم",
+   "qid": 15
+  },
+  {
+   "label": "کینیڈا",
+   "description": "شمالی امریکہ کا ایک ملک",
+   "qid": 16
+  },
+  {
+   "label": "جاپان",
+   "description": "مشرقی ایشیا میں ایک ملک",
+   "qid": 17
+  }
+ ],
+ "vi": [
+  {
+   "label": "vũ trụ",
+   "description": "tập hợp chứa không gian, thời gian, vật chất và năng lượng",
+   "qid": 1
+  },
+  {
+   "label": "Trái Đất",
+   "description": "hành tinh thứ ba và duy nhất được ghi nhận có sự sống trong Hệ Mặt Trời",
+   "qid": 2
+  },
+  {
+   "label": "sự sống",
+   "description": "vật chất có khả năng chiết xuất và tổng hợp năng lượng từ môi trường để tự phát triển, sinh sản, sinh sôi hay tự nhân lên",
+   "qid": 3
+  },
+  {
+   "label": "chết",
+   "description": "sự chấm dứt không thể phục hồi các hoạt động sống của một sinh vật",
+   "qid": 4
+  },
+  {
+   "label": "người",
+   "description": "loài duy nhất thuộc chi Homo của bộ Linh trưởng còn tồn tại",
+   "qid": 5
+  }
+ ],
+ "zh": [
+  {
+   "label": "宇宙",
+   "description": "行星、恆星、星系、所有物質和能量的總體",
+   "qid": 1
+  },
+  {
+   "label": "地球",
+   "description": "太陽系中距離太陽第三近的行星",
+   "qid": 2
+  },
+  {
+   "label": "生命",
+   "description": "能够从环境中提取能量用于保存和复制自我的物体",
+   "qid": 3
+  },
+  {
+   "label": "非洲",
+   "description": "地球上第二大面積、第二多人口的大陸",
+   "qid": 15
+  },
+  {
+   "label": "南美洲",
+   "description": "七大洲之一，美洲大陸南部的區域",
+   "qid": 18
+  }
+ ]
+}

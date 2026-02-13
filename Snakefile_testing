@@ -1,0 +1,13 @@
+# Snakefile
+
+rule test:
+    output:
+        "test_log.txt"
+    resources:
+        slurm_partition="gpu-troja",
+        constraint="gpuram40G|gpuram48G,",
+        slurm_extra="--gres 'gpu:2'"
+    shell:
+        """
+        echo $CUDA_VISIBLE_DEVICES
+        /lnet/troja/work/people/alali/miniconda/envs/torch/bin/python3 test.py"""

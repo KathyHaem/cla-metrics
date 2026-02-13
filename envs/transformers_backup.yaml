@@ -1,0 +1,20 @@
+name: cla-transformers
+channels:
+  # conda config --set channel_priority flexible
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.11
+  - faiss-gpu==1.13.0
+  - defaults::libstdcxx-ng==15.2.0
+  - pip==25.2
+  - pip:
+    - snakemake==9.15.0
+    - langcodes==3.5.0
+    - torch==2.9.1
+    - transformers==4.57.1
+    - datasets==4.3.0
+    - accelerate==1.11.0
+    - numpy==2.4.1
+    - scipy==1.17.0
