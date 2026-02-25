@@ -36,7 +36,7 @@ def broadcast_cache(cache: cache_utils.DynamicCache, batch_size: int) -> tuple[c
 
 @torch.no_grad()
 def cache_prefix(model, tokenizer, lang, glossary, batch_size):
-    prompt = "\n\n".join([f"> {gloss['description']}\n> {gloss['label']}" for gloss in glossary[lang]]) + "\n\n"
+    prompt = "\n\n".join([f"{gloss['description']}\n{gloss['label']}" for gloss in glossary[lang]]) + "\n\n"
     tokenized = tokenizer([prompt], return_tensors="pt")
     t_ids = tokenized.input_ids.to("cuda:0")
     at_mask = tokenized.attention_mask.to("cuda:0")
@@ -50,7 +50,7 @@ def encode_batch(model, tokenizer, kv_cache, cache_mask, sentences):
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = 'right'
 
-    prompts = [f"> {sent}\n>" for sent in sentences]
+    prompts = [f"{sent}\n" for sent in sentences]
     inputs = tokenizer(prompts, padding="longest", return_tensors="pt", add_special_tokens=False)
     t_ids = inputs.input_ids.to(cache_mask.device)
     at_mask = inputs.attention_mask.to(cache_mask.device)

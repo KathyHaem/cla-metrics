@@ -8,3 +8,4 @@ data/
 embeds/
 .vscode
 .snakemake
+.env

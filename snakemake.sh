@@ -11,5 +11,6 @@ snakemake --executor slurm \
     --rerun-incomplete \
     --rerun-triggers mtime \
     --scheduler ilp --scheduler-ilp-solver PULP_CBC_CMD \
-    --keep-going
+    --keep-going \
+    # --touch
     # --retries 2 \

@@ -83,3 +83,9 @@ My main project repo: https://github.com/KathyHaem/cla-metrics
   - vlastnosti tokenizeru: počet tokenov (avg dĺžka) pre daný jazyk oproti EN -- **baseline metrika**
   - Beyond literal overlap článok -- **ďalší baseline**
 chrF sa líši podľa cieloveho jazyku, trebalo by spriemerovať koreláciu v rámci cieľových jazykov
+
+## Models to check out:
+
+- meta-llama/Llama-3.1-8B
+- mistralai/Ministral-3-14B-Base-2512
+- google/gemma-3-12b-pt

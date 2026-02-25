@@ -51,7 +51,7 @@ def main(model: str, src_lang: str, langs: list[str], few_shot = True):
     cahce_dir = tempfile.mkdtemp()
     os.environ["VLLM_CACHE_ROOT"] = cahce_dir
 
-    dataset = load_dataset("facebook/flores", data_dir="all", revision="refs/convert/parquet")["validation"]
+    dataset = load_dataset("facebook/flores", data_dir="all", data_files="flores-devtest.parquet", revision="refs/convert/parquet")["train"]
     llm = LLM(model)
     tokenizer = llm.get_tokenizer()
 

@@ -1,8 +1,11 @@
 import re
 import os
 import json
-
 import argparse
+import tempfile
+import shutil
+from sklearn.metrics import f1_score
+
 from langcodes import Language
 from datasets import load_dataset
 from vllm import LLM, SamplingParams
@@ -10,6 +13,7 @@ from vllm.sampling_params import GuidedDecodingParams
 
 from constants import ALL_LANGUAGES
 
+TOPICS = ["science/technology", "travel", "politics", "sports", "health", "entertainment", "geography"]
 PROMPT = """Classify the following text into one of these topics: "science/technology", "travel", "politics", "sports", "health", "entertainment", "geography". Provide only the topic in English as your response.
 
 text: `{}`
@@ -29,6 +33,8 @@ def get_flores_code(short_code: str):
 
 def process_answer(ans: str):
     ans = ans.strip()
+    if ans == "":
+        return ""
     if ans[-1] == "`":
         ans = ans[:-1]
     re_match = re.match(r"(?:[0-9\.]+ )?(.+)", ans) # NOTE: for some reasons the model often writes "1. [topic]"
@@ -39,17 +45,19 @@ def process_answer(ans: str):
 
 def main(model_name, langs):
     os.makedirs(os.path.join("scores", "sib-200"), exist_ok=True)
+    cahce_dir = tempfile.mkdtemp()
+    os.environ["VLLM_CACHE_ROOT"] = cahce_dir
 
     llm = LLM(model_name)
     # guided_decoding_params = GuidedDecodingParams(choice=TOPICS)
     # sampling_params = SamplingParams(guided_decoding=guided_decoding_params, temperature=0)
     basic_sampling = SamplingParams(temperature=0, max_tokens=16, stop=["\n", "`"])
 
-    accs = dict()
+    f1s = dict()
     for i, lang in enumerate(langs):
         print(f"Running on languege {i}/{len(langs)}: {lang}")
         full_code = get_flores_code(lang)
-        dataset = load_dataset("Davlan/sib200", full_code, split="validation")
+        dataset = load_dataset("Davlan/sib200", full_code, split="test")
         prompts = list(map(PROMPT.format, dataset["text"]))
         targets = dataset["category"]
 
@@ -60,13 +68,15 @@ def main(model_name, langs):
 
 
         answers = [process_answer(output.outputs[0].text) for output in outputs]
-        correct = sum(1 for a, t in zip(answers, targets) if a == t)
-        accuracy = correct / len(targets)
-        accs[lang] = accuracy
+        # correct = sum(1 for a, t in zip(answers, targets) if a == t)
+        # accuracy = correct / len(targets)
+        macro_f1 = f1_score(targets, answers, labels=TOPICS, average='macro', zero_division=0)
+        f1s[lang] = macro_f1
 
     with open(os.path.join("scores", "sib-200", f"{model_name.split("/")[1]}.json"), "w") as f:
-        json.dump(accs, f, indent=4)
+        json.dump(f1s, f, indent=4)
 
+    shutil.rmtree(cahce_dir)
 
 if __name__ == "__main__":
     if "snakemake" in globals():

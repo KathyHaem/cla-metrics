@@ -163,10 +163,10 @@ def main(model_id, langs, batch_size, max_samples = None):
 
     os.makedirs("scores/belebele/", exist_ok=True)
 
-    with open(f"scores/belebele/{model_id.split("/")[1]}_loglik.json", "w") as f:
+    with open(f"scores/belebele/{model_id.split('/')[1]}_loglik.json", "w") as f:
         json.dump(results_loglik, f, indent=True)
     
-    with open(f"cores/belebele/{model_id.split("/")[1]}_mutinf.json", "w") as f:
+    with open(f"scores/belebele/{model_id.split('/')[1]}_mutinf.json", "w") as f:
         json.dump(results_mutinf, f, indent=True)
 
 

@@ -58,20 +58,10 @@ def cache_prefix(model, tokenizer, prompt):
 def loglik_from_logits(logits, mask, target_ids, normalize=True, debug=False):
     log_probs = logits.log_softmax(dim=-1)
     shift_log_probs = log_probs[:, :-1, :]
-    
-    # if debug:
-    #     preds = shift_log_probs.argmax(-1)
-    #     correct_preds = (preds == target_ids[:, 1:])*(mask[:, 1:])
-    #     pred_accuracy = correct_preds.sum(-1) / mask[:, 1:].sum(-1)
-    #     print("Prediction acc:", [round(a, 2) for a in pred_accuracy.cpu().tolist()])
 
     token_loglik = shift_log_probs.gather(dim=-1, index=target_ids[:, 1:].unsqueeze(-1)).squeeze(-1)
     token_loglik[~(mask[:, 1:].bool())] = 0
     loglik = token_loglik.sum(dim=1)
-
-    # if debug:
-    #     print("Loglik mean:", (loglik / mask[:, 1:].sum(dim=1)).cpu().tolist())
-    #     print("Loglik", loglik.cpu().tolist())
 
     if not normalize:
         return loglik
@@ -102,10 +92,6 @@ def get_batch_mutinf(sources, targets, tokenizer, model, kv_cache_prior, cache_m
     ans_loglik = loglik_from_logits(logits, answers_mask, tok_ids, debug=debug)
     mutinf = ans_loglik - ans_prior_loglik
 
-    # if debug:
-    #     print("Mutinf:", mutinf.cpu().tolist())
-    #     print("Seq length:", answers_mask.sum(-1).cpu().tolist())
-
     return mutinf, answers_mask.sum(-1)
 
 @torch.no_grad()
@@ -121,7 +107,7 @@ def main(model_id: str, src_lang: str, target_langs: list[str], batch_size: int,
         except:
             pass
 
-    dataset = load_dataset("facebook/flores", data_dir="all", revision="refs/convert/parquet")["validation"]
+    dataset = load_dataset("facebook/flores", data_dir="all", data_files="flores-devtest.parquet", revision="refs/convert/parquet")["train"]
     torch.set_float32_matmul_precision('high')
     model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
     model = torch.compile(model)
@@ -183,7 +169,10 @@ def main(model_id: str, src_lang: str, target_langs: list[str], batch_size: int,
             print("Mean seq len:", torch.tensor(seq_lens, dtype=float).mean().item())
             print("Correlation:", pearsonr(mutinfs, seq_lens))
             
-        result_dict[tgt_lang] = torch.tensor(mutinfs).mean().item()
+        result_dict[tgt_lang] = {
+            "mean": sum(mutinfs)/len(mutinfs),
+            "sentence-level": mutinfs
+            }
 
     os.makedirs("translation/translation_mutinf", exist_ok=True)
     if not debug:

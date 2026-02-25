@@ -6,8 +6,10 @@ import argparse
 import os
 from multiprocessing import Pool, cpu_count
 
+def sentence_level_chrf(refs, outs):
+    return [computeChrF([r], [o], nworder=2, ncorder=6, beta=2)[1] for r, o in zip(refs, outs)]
 
-def _score_one_src(args):
+def score_one_src(args):
     model_short, src_lang = args
 
     with open(f"translation/translations/{model_short}_{src_lang}.json") as f:
@@ -17,9 +19,10 @@ def _score_one_src(args):
     for tgt_lang, results in translations.items():
         outs = [res["output"] for res in results]
         refs = [res["target"] for res in results]
-        local[f"{src_lang}-{tgt_lang}"] = computeChrF(
-            refs, outs, nworder=2, ncorder=6, beta=2
-        )[1]
+        sentence_chrfs = sentence_level_chrf(refs, outs)
+        mean_chrf = sum(sentence_chrfs) / len(sentence_chrfs)
+
+        local[f"{src_lang}-{tgt_lang}"] = {"mean": mean_chrf, "sentence-level": sentence_chrfs}
 
     return local
 
@@ -33,7 +36,7 @@ def main(model: str, langs: list[str]):
 
     with Pool(processes=cpu_count()) as pool:
         # tqdm over completion of src_lang jobs
-        for local in tqdm(pool.imap_unordered(_score_one_src, tasks), total=len(tasks)):
+        for local in tqdm(pool.imap_unordered(score_one_src, tasks), total=len(tasks)):
             mean_chrf.update(local)
 
     os.makedirs("scores/translation_chrf", exist_ok=True)

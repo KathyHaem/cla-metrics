@@ -9,7 +9,7 @@ GPU_PARTITION="gpu-troja,gpu-ms"
 GPU_CONSTRAINT="gpuram40G|gpuram48G"
 
 def gres_gpu(num):
-    return f"--gres 'gpu:{num}'"
+    return f"--gres 'gpu:{num}' --exclude tdll-3gpu4"
 
 FULL_MODELS = [
     # "meta-llama/Llama-3.2-3B",
@@ -38,13 +38,19 @@ rule all:
                short=MODELS.keys()),
         expand("scores/dali_belebele/{short}.json",
                short=MODELS.keys()),
-        expand("scores/comet/{short}.json",
+        # expand("scores/comet/{short}.json",
+        #        short=MODELS.keys()),
+        expand("scores/belebele/{short}_loglik.json",
+               short=MODELS.keys()),
+        expand("scores/belebele/{short}_mutinf.json",
+               short=MODELS.keys()),
+        expand("scores/sib-200/{short}.json",
                short=MODELS.keys())
 
 rule belebele:
     output:
-        "scores/sib-200/{short}_loglik.json",
-        "scores/sib-200/{short}_mutinf.json"
+        "scores/belebele/{short}_loglik.json",
+        "scores/belebele/{short}_mutinf.json"
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
@@ -75,12 +81,26 @@ rule sib_200:
     script:
         "sib-200/vllm_probing.py"
 
+rule aggregate_comet:
+    input:
+        expand("comet/scores/{{short}}_{lang}.json", lang=ALL_LANGUAGES)
+    output:
+        "scores/comet/{short}.json"
+    resources:
+        slurm_partition=CPU_PARTITION,
+        mem_mb=4000
+    params:
+        model=lambda wc: MODELS[wc.short],
+        langs=ALL_LANGUAGES
+    script:
+        "comet/comet_aggregate.py"
 
 rule translations_comet:
     input:
-        expand("translation/translations/{{short}}_{lang}.json", lang=ALL_LANGUAGES)
+        "translation/translations/{short}_{lang}.json",
+        "translation/translations/{short}_tl.json" # this will be used to extract the untranslated sentences for all the supported languages
     output:
-        "scores/comet/{short}.json"
+        "comet/scores/{short}_{lang}.json"
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=40000,
@@ -88,6 +108,7 @@ rule translations_comet:
         slurm_extra=gres_gpu(1)
     params:
         model=lambda wc: MODELS[wc.short],
+        src_lang=lambda wc: wc.lang,
         langs=ALL_LANGUAGES,
     conda:
         "envs/comet.yaml"
@@ -107,6 +128,8 @@ rule translations_chrf:
     params:
         model=lambda wc: MODELS[wc.short],
         langs=ALL_LANGUAGES,
+    priority:
+        10
     conda:
         "envs/transformers.yaml"
     script:
@@ -119,7 +142,7 @@ rule translations_vllm:
         slurm_partition=GPU_PARTITION,
         mem_mb=16000,
         constraint=GPU_CONSTRAINT,
-        slurm_extra="--gres 'gpu:2'"
+        slurm_extra=gres_gpu(2)
     params:
         model=lambda wc: MODELS[wc.short],
         src_lang=lambda wc: wc.lang,
@@ -140,6 +163,8 @@ rule translations_mutinf_agregate:
     params:
         model=lambda wc: MODELS[wc.short],
         langs=ALL_LANGUAGES
+    priority:
+        10
     script:
         "translation/aggregate_mutinf.py"
 
@@ -150,7 +175,7 @@ rule translations_mutinf:
         slurm_partition=GPU_PARTITION,
         mem_mb=16000,
         constraint=GPU_CONSTRAINT,
-        slurm_extra="--gres 'gpu:2'"
+        slurm_extra=gres_gpu(2)
     params:
         model=lambda wc: MODELS[wc.short],
         src_lang=lambda wc: wc.lang,
@@ -171,7 +196,7 @@ rule calc_scores_dali:
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=16000,
-        slurm_extra="--gres 'gpu:1'",
+        slurm_extra=gres_gpu(1),
         constraint=GPU_CONSTRAINT,
     conda:
         "envs/transformers.yaml"
@@ -188,7 +213,7 @@ rule save_embeds_dali:
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
-        slurm_extra="--gres 'gpu:2'",
+        slurm_extra=gres_gpu(2),
         constraint=GPU_CONSTRAINT,
     conda:
         "envs/transformers.yaml"
@@ -204,7 +229,7 @@ rule calc_scores:
         slurm_partition=lambda wc: CPU_PARTITION if wc.score in ["dist", "ratio", "nn-abs"] else GPU_PARTITION,
         mem_mb=16000,
         constraint=lambda wc: "" if wc.score in ["dist", "ratio", "nn-abs"] else GPU_CONSTRAINT,
-        slurm_extra=lambda wc: "" if wc.score in ["dist", "ratio", "nn-abs"] else "--gres 'gpu:1'",
+        slurm_extra=lambda wc: "" if wc.score in ["dist", "ratio", "nn-abs"] else gres_gpu(1),
         tasks=1,
         cpus_per_task=lambda wc: 10 if wc.score in ["dist", "ratio", "nn-abs"] else 2
     threads:
@@ -234,7 +259,7 @@ rule save_embeds:
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
-        slurm_extra=lambda wc: "--gres 'gpu:3'" if wc.sent_rep=="fewshot" else "--gres 'gpu:2'",
+        slurm_extra=lambda wc: gres_gpu(2) if wc.sent_rep=="fewshot" else gres_gpu(2),
         constraint=GPU_CONSTRAINT,
     conda:
         "envs/transformers.yaml"

@@ -1,0 +1,17 @@
+\setlength{\tabcolsep}{5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}{X c  c  c  c  c  c}
+        \toprule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{60.8}{0} & \percentGrad{70.3}{0} & \percentGrad{77.5}{0} & \percentGrad{77.5}{0} & \percentGrad{77.8}{0} & -- \\
+        \textbf{last} & \percentGrad{59.5}{0} & \percentGrad{63.3}{0} & \percentGrad{72.1}{0} & \percentGrad{72.1}{0} & \percentGrad{72.1}{0} & \percentGrad{64.3}{0} \\
+        \textbf{p-wm} & \percentGrad{64.8}{0} & \percentGrad{76.6}{0} & \percentGrad{88.5}{1} & \percentGrad{88.5}{1} & \percentGrad{88.5}{1} & -- \\
+        \textbf{mean} & \percentGrad{60.1}{0} & \percentGrad{77.7}{0} & \percentGrad{80.8}{0} & \percentGrad{80.8}{0} & \percentGrad{80.9}{0} & -- \\
+        \textbf{prompt} & \percentGrad{72.5}{0} & \percentGrad{82.9}{0} & \percentGrad{85.6}{0} & \percentGrad{85.6}{0} & \percentGrad{85.7}{0} & -- \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Pearson correlation measured across the \texttt{src} languages of \texttt{src-en} alignment score and the SIB-200 \(F_1\) score in the \texttt{src} language for Qwen/Qwen3-14B. The layer with the highest correlation is selected for each metric and sentence representation.}
+    \label{tab:sib200-Qwen3-14B-en}
+\end{table}
