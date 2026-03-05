@@ -1,0 +1,2 @@
+Mean correlation: 0.9196078468700315
+Standard deviation: 0.04613724439727407

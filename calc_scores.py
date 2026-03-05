@@ -91,6 +91,8 @@ def main(model, dataset, sent_rep, requested_scores, overwrite=False):
     os.makedirs(out_path, exist_ok=True)
 
     config = AutoConfig.from_pretrained(model)
+    if "num_hidden_layers" not in config:
+        config.num_hidden_layers = config.text_config.num_hidden_layers
 
     for score in requested_scores:
         out_filename = f"{out_path}/{model_short_name}_{sent_rep}_{score}.json"

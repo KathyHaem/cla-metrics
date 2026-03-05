@@ -7,7 +7,7 @@ from datasets import load_dataset, Dataset
 from langcodes import Language
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM, AutoModelForImageTextToText
 
 from save_embeds_fewshot import get_fewshot_embeds
 
@@ -81,8 +81,13 @@ def main(dataset_name, model_name, langs, sent_rep, batch_size, overwrite=False)
         raise NotImplementedError
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    except ValueError:
+        model = AutoModelForImageTextToText.from_pretrained(model_name, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
     model.eval()
+    if "num_hidden_layers" not in model.config:
+        model.config.num_hidden_layers = model.config.text_config.num_hidden_layers
 
     model_short_name = model_name.split("/")[-1]
     out_path = f"embeds/{dataset_name}"

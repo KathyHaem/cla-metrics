@@ -27,7 +27,7 @@ def main(model: str):
             corr_table_layer_mean[s_i, m_i] = pearsonr(cla_en, cla_rest).correlation
 
             if np.isnan(pearsonr(cla_en, cla_rest).correlation):
-                print("Someting wrong")
+                print("Something is wrong")
             
 
     df = pd.DataFrame(corr_table_layer_mean, 
@@ -37,7 +37,7 @@ def main(model: str):
     os.makedirs("evaluation/tables", exist_ok=True)
     with open(f"evaluation/tables/corr_with_cla_en_{model.split('/')[1]}.tex", "w") as f:
         f.write(df_to_tex(df, 
-                          caption=f"Pearson correlation measured across the \\texttt{{src}} languages between the per-layer average \\texttt{{src-en}} and \\texttt{{src-[\\textasciitilde{{}}en]}} alignment scores for {model}.", 
+                          caption=f"Pearson correlation measured across the \\texttt{{src}} languages between the \\texttt{{src-en}} and \\texttt{{src-[\\textasciitilde{{}}en]}} alignment scores for {model.split('/')[1]}. Values are displayed as per cent.",
                           label=f"corr-{model.split('/')[1]}", 
                           grad_command="\\percentGrad"))
 

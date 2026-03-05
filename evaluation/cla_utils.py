@@ -7,7 +7,7 @@ import pandas as pd
 
 from constants import ALL_LANGUAGES
 
-METRICS = ["cosine", "anc", "nn-abs", "dist", "ratio", "dali"]#, "eflomal"]
+METRICS = ["cosine", "anc", "nn-abs", "dist", "ratio", "dali", "eflomal"]
 SENT_REPS = ["fewshot", "last-token", "weighted-mean", "mean", "prompt"]
 
 REPS_SHORT_NAMES = {
@@ -25,6 +25,12 @@ METRICS_SHORT_NAMES = {
     "eflomal": "Eflo"
 }
 
+FULL_MODELS = [
+    "Qwen/Qwen3-14B",
+    "google/gemma-3-12b-pt",
+    "mistralai/Ministral-3-14B-Base-2512",
+]
+
 def get_cla_all(model: str) -> dict:
     """
     Returns dict containing the alignment scores for each metric and sentence representation.
@@ -39,6 +45,16 @@ def get_cla_all(model: str) -> dict:
 
     for metric in METRICS:
         cla_all[metric] = dict()
+
+        if metric == "eflomal":
+            with open(os.path.join("scores", "eflomal", f"{model}.json")) as f:
+                eflomal_dict = json.load(f)
+            eflomal_scores = dict()
+            for lang1, record in eflomal_dict.items():
+                for lang2, value in record.items():
+                    eflomal_scores[f"{lang1}-{lang2}"] = [-value]
+            cla_all[metric]["mean"] = eflomal_scores
+
         for sent_rep in SENT_REPS:
 
             if metric == "dali":
@@ -53,8 +69,8 @@ def get_cla_all(model: str) -> dict:
                         eflomal_dict = json.load(f)
                     eflomal_scores = dict()
                     for lang1, record in eflomal_dict.items():
-                        for lang2, values in record.items():
-                            eflomal_scores[f"{lang1}-{lang2}"] = [-values["eflomal"]]
+                        for lang2, value in record.items():
+                            eflomal_scores[f"{lang1}-{lang2}"] = [-value]
                     cla_all[metric][sent_rep] = eflomal_scores
 
             if os.path.isfile(os.path.join("scores", "flores", f"{model}_{sent_rep}_{metric}.json")):
@@ -133,7 +149,16 @@ def best_aligned_layer_all(cla_all: dict) -> dict:
             except KeyError:
                 continue
 
-def df_to_tex(df: pd.DataFrame, caption: str, label: str, use_index_column=True, heatmap=True, grad_command="", highlight_max=False) -> str:
+def df_to_tex(df: pd.DataFrame,
+              caption: str,
+              label: str,
+              use_index_column=True,
+              heatmap=True,
+              grad_command="",
+              highlight_max=False,
+              separate_last_col=True,
+              custom_colspec="",
+              custom_header="") -> str:
     """
     Converts the dataframe into a formate TeX table.
 
@@ -151,12 +176,20 @@ def df_to_tex(df: pd.DataFrame, caption: str, label: str, use_index_column=True,
     :type grad_command: str 
     :param highlight_max: Highlight the maximum value in the table?
     :type highlight_max: bool
-
+    :param separate_last_col: Separate the last column with a vertical line?
+    :type separate_last_col: bool
+    :param custom_colspec: Custom column specification for the tabularx environment.
+    :type custom_colspec: str
+    :param custom_header: Custom header for the table.
+    :type custom_header: str
 
     :return: A TeX table string.
     :rtype: str
     """
-    def print_value(val: float):
+    def print_value(val):
+        if isinstance(val, str):
+            return val
+
         if np.isnan(val):
             return "--"
 
@@ -186,18 +219,20 @@ def df_to_tex(df: pd.DataFrame, caption: str, label: str, use_index_column=True,
         grad_command = f'\\{make_alphabetic_command_name(label)}Grad'
         grad_command_defined = True
 
-    max_value = df.max(axis=None)*100
+    if heatmap or highlight_max:
+        max_value = df.max(axis=None)*100
     lines = []
     if heatmap and grad_command_defined:
         lines.append(f'\\newcommand{{{grad_command}}}[2]{{\\gradientcell{{#1}}{{{df.min(axis=None)*100}}}{{{max_value}}}{{cyan}}{{yellow}}{{70}}{{#2}}}}')
     
     lines += [
-        r'\setlength{\tabcolsep}{5pt}',
+        r'\setlength{\tabcolsep}{4.5pt}',
         r'\begin{table}[ht]',
         r'    \centering\footnotesize',
-        f'    \\begin{{tabularx}}{{\columnwidth}}{{{"X " if use_index_column else ""}{"  ".join(["c"] * len(df.columns))}}}',
+        f'    \\begin{{tabularx}}{{\columnwidth}}%',
+        custom_colspec if custom_colspec else '    {{{"X | " if use_index_column else ""}{("  ".join(["c"] * (len(df.columns) - 1)) + (" | c" if separate_last_col else " c"))}}}',
         r'        \toprule',
-        f'        {" & " if use_index_column else ""}{" & ".join([f"\\textbf{{{col}}}" for col in df.columns])} \\\\',
+        custom_header if custom_header else f'        {" & " if use_index_column else ""}{" & ".join([f"\\textbf{{{col}}}" for col in df.columns])} \\\\',
         r'        \midrule'
     ]
 
@@ -215,3 +250,10 @@ def df_to_tex(df: pd.DataFrame, caption: str, label: str, use_index_column=True,
     ]
 
     return "\n".join(lines)
+
+
+def get_translation_scores(model: str, metric: Literal["chrf", "mutinf"]) -> dict:
+    with open(os.path.join("scores", f"translation_{metric}", f"{model}.json")) as f:
+        pmi_dict = json.load(f)
+
+    return {k: v["mean"] for k, v in pmi_dict.items()}

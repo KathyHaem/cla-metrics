@@ -4,12 +4,13 @@ import json
 import argparse
 import tempfile
 import shutil
+
+from numpy import dtype
 from sklearn.metrics import f1_score
 
 from langcodes import Language
 from datasets import load_dataset
 from vllm import LLM, SamplingParams
-from vllm.sampling_params import GuidedDecodingParams
 
 from constants import ALL_LANGUAGES
 
@@ -48,9 +49,7 @@ def main(model_name, langs):
     cahce_dir = tempfile.mkdtemp()
     os.environ["VLLM_CACHE_ROOT"] = cahce_dir
 
-    llm = LLM(model_name)
-    # guided_decoding_params = GuidedDecodingParams(choice=TOPICS)
-    # sampling_params = SamplingParams(guided_decoding=guided_decoding_params, temperature=0)
+    llm = LLM(model_name, max_model_len=10000, dtype="bfloat16")
     basic_sampling = SamplingParams(temperature=0, max_tokens=16, stop=["\n", "`"])
 
     f1s = dict()

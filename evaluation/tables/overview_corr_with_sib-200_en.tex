@@ -1,0 +1,15 @@
+\setlength{\tabcolsep}{4.5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}{X | c  c c}
+        \toprule
+         & \textbf{Qwen3} & \textbf{gemma-3} & \textbf{Ministral-3} \\
+        \midrule
+        \textbf{correlation} & 78.7 & 69.8 & 89.0 \\
+        \textbf{representation} & p-wm & last & prompt \\
+        \textbf{ CLA metric} & abs & cos & abs \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Overview of the best Pearson correlation measured across the \texttt{src} languages of \texttt{src-en} alignment score and the \textbf{{SIB-200}} \(F_1\) score in the \texttt{src} language for all models. Values are displayed as per cent.}
+    \label{tab:overview-corr-en-task-sib-200}
+\end{table}

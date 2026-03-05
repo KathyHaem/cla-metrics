@@ -1,4 +1,6 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizerFast, LlamaForCausalLM
+# This script was used to zero-shot evaluate the models on the Belebele dataset, which did not produce sufficiently good results, therefore it is not used.
+
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizerFast, LlamaForCausalLM, AutoModelForImageTextToText
 from datasets import load_dataset, Value
 from tqdm import tqdm
 import torch
@@ -71,7 +73,7 @@ def compute_answers_logliks(
     cq_tok_ids = cq_tokens.input_ids.to(model.device)
     cq_mask = cq_tokens.attention_mask.to(model.device)
 
-    cq_forward = model(cq_tok_ids, cq_mask, use_cache=True)
+    cq_forward = model(cq_tok_ids, attention_mask=cq_mask, use_cache=True)
     cached_cq = cq_forward.past_key_values
     # NOTE: the predictions for the first answer tokens are stored in the cq logits
     first_ans_token_logits = cq_forward.logits[:,-1,:].unsqueeze(1)
@@ -83,7 +85,7 @@ def compute_answers_logliks(
         ans_mask = ans_tokens.attention_mask.to(model.device)
 
         # compute priors
-        logits = model(ans_ids, ans_mask).logits
+        logits = model(ans_ids, attention_mask=ans_mask).logits
         log_probs = logits.log_softmax(dim=-1)
         prior_loglik = loglik_from_logprobs(log_probs, ans_mask[:, 1:], ans_ids[:, 1:], mean=False)
 
@@ -93,7 +95,7 @@ def compute_answers_logliks(
 
         cloned_cache = copy.deepcopy(cached_cq)
         logits = model(ans_ids, 
-                    torch.cat((cq_mask, ans_mask), dim=1), # IMPORTANT: we also need the attention mask of the context
+                    attention_mask=torch.cat((cq_mask, ans_mask), dim=1), # IMPORTANT: we also need the attention mask of the context
                     past_key_values = cloned_cache # IMPORTANT: we need to copy the original object to prevent mutation
                     ).logits 
         log_probs = torch.cat((first_ans_token_logits, logits), dim=1).log_softmax(dim=-1)
@@ -106,7 +108,10 @@ def compute_answers_logliks(
 
 def main(model_id, langs, batch_size, max_samples = None):
     torch.set_float32_matmul_precision('medium')
-    model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    except ValueError:
+        model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
     model = torch.compile(model)
     model.eval()
     tokenizer = AutoTokenizer.from_pretrained(model_id)

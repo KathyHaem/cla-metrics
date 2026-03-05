@@ -9,12 +9,12 @@ GPU_PARTITION="gpu-troja,gpu-ms"
 GPU_CONSTRAINT="gpuram40G|gpuram48G"
 
 def gres_gpu(num):
-    return f"--gres 'gpu:{num}' --exclude tdll-3gpu4"
+    return f"--gres 'gpu:{num}'"
 
 FULL_MODELS = [
-    # "meta-llama/Llama-3.2-3B",
-    "Qwen/Qwen3-14B"
-    # "CohereLabs/aya-expanse-8b",
+    "Qwen/Qwen3-14B",
+    "mistralai/Ministral-3-14B-Base-2512",
+    "google/gemma-3-12b-pt"
 ]
 
 def short_name(model_id: str) -> str:
@@ -40,30 +40,28 @@ rule all:
                short=MODELS.keys()),
         # expand("scores/comet/{short}.json",
         #        short=MODELS.keys()),
-        expand("scores/belebele/{short}_loglik.json",
-               short=MODELS.keys()),
-        expand("scores/belebele/{short}_mutinf.json",
+        expand("scores/belebele/{short}_acc.json",
                short=MODELS.keys()),
         expand("scores/sib-200/{short}.json",
-               short=MODELS.keys())
+               short=MODELS.keys()),
+        # expand("scores/eflomal/{model}.json",
+        #        model=MODELS.keys())
 
 rule belebele:
     output:
-        "scores/belebele/{short}_loglik.json",
-        "scores/belebele/{short}_mutinf.json"
+        "scores/belebele/{short}_acc.json"
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
         constraint=GPU_CONSTRAINT,
         slurm_extra=gres_gpu(2)
     params:
-        model=lambda wc: MODELS[wc.short],
-        langs=ALL_LANGUAGES,
-        batch_size=10
+        model=lambda wildcards: MODELS[wildcards.short],
+        langs=ALL_LANGUAGES
     conda:
-        "envs/transformers.yaml"
+        "envs/vllm.yaml"
     script:
-        "belebele/run.py"
+        "belebele/belebele_vllm.py"
 
 rule sib_200:
     output:
@@ -74,7 +72,7 @@ rule sib_200:
         constraint=GPU_CONSTRAINT,
         slurm_extra=gres_gpu(1)
     params:
-        model=lambda wc: MODELS[wc.short],
+        model=lambda wildcards: MODELS[wildcards.short],
         langs=ALL_LANGUAGES
     conda:
         "envs/vllm.yaml"
@@ -90,7 +88,7 @@ rule aggregate_comet:
         slurm_partition=CPU_PARTITION,
         mem_mb=4000
     params:
-        model=lambda wc: MODELS[wc.short],
+        model=lambda wildcards: MODELS[wildcards.short],
         langs=ALL_LANGUAGES
     script:
         "comet/comet_aggregate.py"
@@ -107,9 +105,9 @@ rule translations_comet:
         constraint=GPU_CONSTRAINT,
         slurm_extra=gres_gpu(1)
     params:
-        model=lambda wc: MODELS[wc.short],
-        src_lang=lambda wc: wc.lang,
-        langs=ALL_LANGUAGES,
+        model=lambda wildcards: MODELS[wildcards.short],
+        src_lang=lambda wildcards: wildcards.lang,
+        langs=ALL_LANGUAGES
     conda:
         "envs/comet.yaml"
     script:
@@ -126,8 +124,8 @@ rule translations_chrf:
     output:
         "scores/translation_chrf/{short}.json"
     params:
-        model=lambda wc: MODELS[wc.short],
-        langs=ALL_LANGUAGES,
+        model=lambda wildcards: MODELS[wildcards.short],
+        langs=ALL_LANGUAGES
     priority:
         10
     conda:
@@ -144,9 +142,9 @@ rule translations_vllm:
         constraint=GPU_CONSTRAINT,
         slurm_extra=gres_gpu(2)
     params:
-        model=lambda wc: MODELS[wc.short],
-        src_lang=lambda wc: wc.lang,
-        langs=ALL_LANGUAGES,
+        model=lambda wildcards: MODELS[wildcards.short],
+        src_lang=lambda wildcards: wildcards.lang,
+        langs=ALL_LANGUAGES
     conda:
         "envs/vllm.yaml"
     script:
@@ -161,7 +159,7 @@ rule translations_mutinf_agregate:
         slurm_partition=CPU_PARTITION,
         mem_mb=2000
     params:
-        model=lambda wc: MODELS[wc.short],
+        model=lambda wildcards: MODELS[wildcards.short],
         langs=ALL_LANGUAGES
     priority:
         10
@@ -177,8 +175,8 @@ rule translations_mutinf:
         constraint=GPU_CONSTRAINT,
         slurm_extra=gres_gpu(2)
     params:
-        model=lambda wc: MODELS[wc.short],
-        src_lang=lambda wc: wc.lang,
+        model=lambda wildcards: MODELS[wildcards.short],
+        src_lang=lambda wildcards: wildcards.lang,
         langs=ALL_LANGUAGES,
         batch_size=10
     conda:
@@ -192,12 +190,12 @@ rule calc_scores_dali:
     output:
         "scores/dali_belebele/{short}.json"
     params:
-        model=lambda wc: MODELS[wc.short],
+        model=lambda wildcards: MODELS[wildcards.short]
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=16000,
         slurm_extra=gres_gpu(1),
-        constraint=GPU_CONSTRAINT,
+        constraint=GPU_CONSTRAINT
     conda:
         "envs/transformers.yaml"
     script:
@@ -207,14 +205,14 @@ rule save_embeds_dali:
     output:
         "embeds/dali-belebele/{short}-{lang}.pt"
     params:
-        model=lambda wc: MODELS[wc.short],
+        model=lambda wildcards: MODELS[wildcards.short],
         batch_size=10,
-        lang=lambda wc: wc.lang
+        lang=lambda wildcards: wildcards.lang
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
         slurm_extra=gres_gpu(2),
-        constraint=GPU_CONSTRAINT,
+        constraint=GPU_CONSTRAINT
     conda:
         "envs/transformers.yaml"
     script:
@@ -226,21 +224,21 @@ rule calc_scores:
     output:
         "scores/flores/{short}_{sent_rep}_{score}.json"
     resources:
-        slurm_partition=lambda wc: CPU_PARTITION if wc.score in ["dist", "ratio", "nn-abs"] else GPU_PARTITION,
+        slurm_partition=lambda wildcards: CPU_PARTITION if wildcards.score in ["dist", "ratio", "nn-abs"] else GPU_PARTITION,
         mem_mb=16000,
-        constraint=lambda wc: "" if wc.score in ["dist", "ratio", "nn-abs"] else GPU_CONSTRAINT,
-        slurm_extra=lambda wc: "" if wc.score in ["dist", "ratio", "nn-abs"] else gres_gpu(1),
+        constraint=lambda wildcards: "" if wildcards.score in ["dist", "ratio", "nn-abs"] else GPU_CONSTRAINT,
+        slurm_extra=lambda wildcards: "" if wildcards.score in ["dist", "ratio", "nn-abs"] else gres_gpu(1),
         tasks=1,
-        cpus_per_task=lambda wc: 10 if wc.score in ["dist", "ratio", "nn-abs"] else 2
+        cpus_per_task=lambda wildcards: 10 if wildcards.score in ["dist", "ratio", "nn-abs"] else 2
     threads:
         10
     params:
         dataset="flores",
-        model=lambda wc: MODELS[wc.short],
+        model=lambda wildcards: MODELS[wildcards.short],
         langs=ALL_LANGUAGES,
-        sent_rep=lambda wc: wc.sent_rep,
+        sent_rep=lambda wildcards: wildcards.sent_rep,
         overwrite=False,
-        score=lambda wc: [wc.score]
+        score=lambda wildcards: [wildcards.score]
     conda:
         "envs/transformers.yaml"
     script:
@@ -249,19 +247,140 @@ rule calc_scores:
 rule save_embeds:
     output:
         expand("embeds/flores/{{short}}-{{sent_rep}}-{lang}.pickle", lang=ALL_LANGUAGES)
+    # noinspection PyUnresolvedReferences
     params:
         dataset="flores",
-        model=lambda wc: MODELS[wc.short],
+        model=lambda wildcards: MODELS[wildcards.short],
         langs=ALL_LANGUAGES,
-        sent_rep=lambda wc: wc.sent_rep,
+        sent_rep=lambda wildcards: wildcards.sent_rep,
         batch_size=10,
         overwrite=False
+    # noinspection PyUnresolvedReferences
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
-        slurm_extra=lambda wc: gres_gpu(2) if wc.sent_rep=="fewshot" else gres_gpu(2),
-        constraint=GPU_CONSTRAINT,
+        slurm_extra=lambda wildcards: gres_gpu(2) if wildcards.sent_rep=="fewshot" else gres_gpu(2),
+        constraint=GPU_CONSTRAINT
     conda:
         "envs/transformers.yaml"
     script:
         "save_embeds.py"
+
+# Eflomal
+
+rule score_eflomal:
+    resources:
+        mem_mb=8000,
+        slurm_partition=CPU_PARTITION
+    input:
+        ["eflomal/computations/{{model}}/{src}-{tgt}.eflomal.sym".format(src=s, tgt=t) for s in ALL_LANGUAGES for t in ALL_LANGUAGES if s != t],
+        ["eflomal/computations/{{model}}/{src}-{tgt}.eflomal.scores.fwd".format(src=s, tgt=t) for s in ALL_LANGUAGES for t in ALL_LANGUAGES if s != t],
+        ["eflomal/computations/{{model}}/{src}-{tgt}.eflomal.scores.rev".format(src=s, tgt=t) for s in ALL_LANGUAGES for t in ALL_LANGUAGES if s != t]
+    output:
+        "scores/eflomal/{model}.json"
+    params:
+        model=lambda wildcards: MODELS[wildcards.model],
+        langs=ALL_LANGUAGES
+    conda:
+        "envs/eflomal.yaml"
+    script:
+        "eflomal/alignability.py"
+
+rule symmetrize:
+    resources:
+        mem_mb=2000,
+        slurm_partition=CPU_PARTITION
+    input:
+        "eflomal/computations/fast_align/build/atools",
+        "eflomal/computations/{model}/{src}-{tgt}.eflomal.fwd",
+        "eflomal/computations/{model}/{src}-{tgt}.eflomal.rev"
+    output:
+        "eflomal/computations/{model}/{src}-{tgt}.eflomal.sym"
+    shell:
+        """eflomal/computations/fast_align/build/atools -i "eflomal/computations/{wildcards.model}/{wildcards.src}-{wildcards.tgt}.eflomal.fwd" \
+        -j "eflomal/computations/{wildcards.model}/{wildcards.src}-{wildcards.tgt}.eflomal.rev" \
+        -c grow-diag-final-and > "eflomal/computations/{wildcards.model}/{wildcards.src}-{wildcards.tgt}.eflomal.sym" """
+
+rule run_eflomal:
+    resources:
+        mem_mb=2000,
+        slurm_partition=CPU_PARTITION
+    input:
+        "eflomal/computations/{model}/{src}-{tgt}.tok.fast_align"
+    output:
+        "eflomal/computations/{model}/{src}-{tgt}.eflomal.fwd",
+        "eflomal/computations/{model}/{src}-{tgt}.eflomal.rev",
+        "eflomal/computations/{model}/{src}-{tgt}.eflomal.scores.fwd",
+        "eflomal/computations/{model}/{src}-{tgt}.eflomal.scores.rev"
+    conda:
+        "envs/eflomal.yaml"
+    shell:
+        """
+        eflomal-align \
+        -i "eflomal/computations/{wildcards.model}/{wildcards.src}-{wildcards.tgt}.tok.fast_align" \
+        -f="eflomal/computations/{wildcards.model}/{wildcards.src}-{wildcards.tgt}.eflomal.fwd" \
+        -r="eflomal/computations/{wildcards.model}/{wildcards.src}-{wildcards.tgt}.eflomal.rev" \
+        --forward-scores "eflomal/computations/{wildcards.model}/{wildcards.src}-{wildcards.tgt}.eflomal.scores.fwd" \
+        --reverse-scores "eflomal/computations/{wildcards.model}/{wildcards.src}-{wildcards.tgt}.eflomal.scores.rev" --overwrite
+        """
+
+rule prep_corpus:
+    resources:
+        mem_mb=2000,
+        slurm_partition=CPU_PARTITION
+    input:
+        "eflomal/computations/{model}/tokenizer",
+        "eflomal/computations/dataset/flores/all/flores-dev.parquet"
+    output:
+        "eflomal/computations/{model}/{src}-{tgt}.tok.fast_align"
+    params:
+        model=lambda wildcards: MODELS[wildcards.model],
+        src=lambda wildcards: wildcards.src,
+        tgt=lambda wildcards: wildcards.tgt
+    conda:
+        "envs/eflomal.yaml"
+    script:
+        "eflomal/prep_tok_files.py"
+
+rule download_dataset:
+    resources:
+        mem_mb=2000,
+        slurm_partition=CPU_PARTITION
+    output:
+        "eflomal/computations/dataset/flores/all/flores-dev.parquet"
+    params:
+        model=None,
+        resource="dataset"
+    conda:
+        "envs/transformers.yaml"
+    script:
+        "eflomal/download_resources.py"
+
+rule download_tokenizer:
+    resources:
+        mem_mb=2000,
+        slurm_partition=CPU_PARTITION
+    output:
+        directory("eflomal/computations/{model}/tokenizer"),
+    params:
+        model = lambda wildcards: MODELS[wildcards.model],
+        resource="tokenizer"
+    conda:
+        "envs/transformers.yaml"
+    script:
+        "eflomal/download_resources.py"
+        
+rule build_fast_align:
+    resources:
+        mem_mb=2000,
+        slurm_partition=CPU_PARTITION
+    output:
+        "eflomal/computations/fast_align/build/atools"
+    shell:
+        """
+        cd eflomal/computations
+        rm -rf fast_align
+        git clone https://github.com/clab/fast_align.git
+        mkdir fast_align/build
+        cd fast_align/build
+        cmake .. && make"""

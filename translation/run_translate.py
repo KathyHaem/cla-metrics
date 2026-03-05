@@ -30,7 +30,7 @@ def get_flores_code(short_code: str):
 
 def process_answer(ans: str):
     ans = ans.strip()
-    if ans[-1] == "`":
+    if ans and ans[-1] == "`":
         ans = ans[:-1]
     return ans
 
@@ -52,7 +52,7 @@ def main(model: str, src_lang: str, langs: list[str], few_shot = True):
     os.environ["VLLM_CACHE_ROOT"] = cahce_dir
 
     dataset = load_dataset("facebook/flores", data_dir="all", data_files="flores-devtest.parquet", revision="refs/convert/parquet")["train"]
-    llm = LLM(model)
+    llm = LLM(model, max_model_len=10000, dtype="bfloat16")
     tokenizer = llm.get_tokenizer()
 
     result_dict = dict()
@@ -71,7 +71,7 @@ def main(model: str, src_lang: str, langs: list[str], few_shot = True):
                 text=sentence) for sentence in sentences]
 
             targets = dataset[f"sentence_{tgt_flores}"]
-            sampling_params_batch = [SamplingParams(temperature=0, max_tokens=int(1.5*len(tokenizer.tokenize(t))), stop=["\n", "`"]) for t in targets]
+            sampling_params_batch = [SamplingParams(temperature=0, max_tokens=int(1.5*len(tokenizer(t).input_ids)), stop=["\n", "`"]) for t in targets]
         
         else:
             assert all(["\n" not in sentence for sentence in sentences])
@@ -81,7 +81,7 @@ def main(model: str, src_lang: str, langs: list[str], few_shot = True):
             targets = targets[3:]
 
             prompts = [prompt_prefix + sentence + "\n>" for sentence in sentences[3:]]
-            sampling_params_batch = [SamplingParams(temperature=0, max_tokens=int(1.5*len(tokenizer.tokenize(t))), stop=["\n"]) for t in targets]
+            sampling_params_batch = [SamplingParams(temperature=0, max_tokens=int(1.5*len(tokenizer(t).input_ids)), stop=["\n"]) for t in targets]
 
         
         outputs = llm.generate(

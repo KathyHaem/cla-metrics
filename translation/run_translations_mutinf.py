@@ -1,4 +1,4 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForImageTextToText
 import torch
 from transformers import cache_utils
 from copy import deepcopy
@@ -51,7 +51,7 @@ def cache_prefix(model, tokenizer, prompt):
     tokenized = tokenizer([prompt], return_tensors="pt")
     t_ids = tokenized.input_ids.to(model.device)
     at_mask = tokenized.attention_mask.to(model.device)
-    outputs = model(t_ids, at_mask, use_cache=True)
+    outputs = model(t_ids, attention_mask=at_mask, use_cache=True)
     return outputs.past_key_values, at_mask
 
 @torch.no_grad()
@@ -73,7 +73,7 @@ def get_batch_mutinf(sources, targets, tokenizer, model, kv_cache_prior, cache_m
     tokenized_ans = tokenizer([t for t in targets], add_special_tokens=False, return_tensors="pt", padding="longest")
     tokens_ans = tokenized_ans.input_ids.to(model.device)
     mask_ans = tokenized_ans.attention_mask.to(model.device)
-    logits_ans = model(tokens_ans, torch.cat((cache_mask_prior, mask_ans), dim=1), past_key_values = kv_cache_prior).logits
+    logits_ans = model(tokens_ans, attention_mask=torch.cat((cache_mask_prior, mask_ans), dim=1), past_key_values = kv_cache_prior).logits
     ans_prior_loglik = loglik_from_logits(logits_ans, mask_ans, tokens_ans, debug=debug)
 
     prompt_suffix = [f"{src}\n{tgt}" for src, tgt in zip(sources, targets)]
@@ -81,7 +81,7 @@ def get_batch_mutinf(sources, targets, tokenizer, model, kv_cache_prior, cache_m
     tok_ids = tokens_suffix.input_ids.to(model.device)
     att_mask = tokens_suffix.attention_mask.to(model.device)
 
-    logits = model(tok_ids, torch.cat((cache_mask_posterior, att_mask), dim=1), past_key_values = kv_cache_posterior).logits
+    logits = model(tok_ids, attention_mask=torch.cat((cache_mask_posterior, att_mask), dim=1), past_key_values = kv_cache_posterior).logits
 
     source_lengths = [len(f"{src}\n") for src in sources]
     answer_start_token = torch.tensor([tokens_suffix.char_to_token(i, ref_len) for i, ref_len in enumerate(source_lengths)])
@@ -109,7 +109,10 @@ def main(model_id: str, src_lang: str, target_langs: list[str], batch_size: int,
 
     dataset = load_dataset("facebook/flores", data_dir="all", data_files="flores-devtest.parquet", revision="refs/convert/parquet")["train"]
     torch.set_float32_matmul_precision('high')
-    model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    except ValueError:
+        model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
     model = torch.compile(model)
     model.eval()
     tokenizer = AutoTokenizer.from_pretrained(model_id)

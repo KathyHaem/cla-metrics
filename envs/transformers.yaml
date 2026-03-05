@@ -8,14 +8,10 @@ channels:
   - defaults
 dependencies:
   - python==3.11
-  - faiss-gpu==1.13.0
   - gcc_linux-64
   - gxx_linux-64
   - cuda-nvcc
   - cuda-toolkit
-  # - libcusparse-dev
-  # - libcurand-dev
-  # - libcusolver-dev
   - conda-forge::pytorch
   - flash-attn-layer-norm==2.7.2
   - pip<=25.2
@@ -25,8 +21,10 @@ dependencies:
     - ninja
     - snakemake==9.15.0
     - langcodes==3.5.0
-    - transformers==4.57.1
+    - transformers==5.0.0rc0
+    - mistral-common>=1.8.6
     - datasets==4.3.0
     - accelerate==1.11.0
     - numpy==2.4.1
     - scipy==1.17.0
+    - faiss-cpu==1.13.0

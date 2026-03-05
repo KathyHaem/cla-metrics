@@ -112,7 +112,7 @@ def run_pos_eval(model_name, langs, prompt, gpus, overwrite=False):
     output_directory = os.path.join("outputs", "pos", model_short_name)
     os.makedirs(output_directory, exist_ok=True)
 
-    llm = LLM(model=model_name, tensor_parallel_size=gpus)
+    llm = LLM(model=model_name, tensor_parallel_size=gpus, max_model_len=10000)
     sampling_params = get_sampling_params()
 
     pos_data = load_pos_data(langs)

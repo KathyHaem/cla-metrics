@@ -1,12 +1,10 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizerFast, LlamaForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizerFast, LlamaForCausalLM, AutoModelForImageTextToText
 from datasets import load_dataset
 from tqdm import tqdm
 import torch
 import argparse
 import copy
-import gc
 from langcodes import Language
-from constants import ALL_LANGUAGES
 import os
 
 from datasets.utils.logging import set_verbosity_error
@@ -52,7 +50,7 @@ def compute_representations(
     cq_tok_ids = cq_tokens.input_ids.to(model.device)
     cq_mask = cq_tokens.attention_mask.to(model.device)
 
-    cq_forward = model(cq_tok_ids, cq_mask, use_cache=True)
+    cq_forward = model(cq_tok_ids, attention_mask=cq_mask, use_cache=True)
     cached_cq = cq_forward.past_key_values
 
     tokenizer.padding_side = "right"
@@ -63,7 +61,7 @@ def compute_representations(
 
         cloned_cache = copy.deepcopy(cached_cq)
         hidden = torch.stack(model.forward(ans_ids, 
-                    torch.cat((cq_mask, ans_mask), dim=1), # IMPORTANT: we also need the attention mask of the context
+                    attention_mask=torch.cat((cq_mask, ans_mask), dim=1), # IMPORTANT: we also need the attention mask of the context
                     past_key_values = cloned_cache, # IMPORTANT: we need to copy the original object to prevent mutation
                     output_hidden_states = True
                     ).hidden_states)
@@ -75,9 +73,20 @@ def compute_representations(
     return options_emb
 
 def main(model_id, lang, batch_size=10):
-    model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto",
+                                                     attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    except ValueError:
+        model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto",
+                                                            attn_implementation="flash_attention_2",
+                                                            dtype=torch.bfloat16)
     model = torch.compile(model)
     model.eval()
+    if "num_hidden_layers" not in model.config:
+        model.config.num_hidden_layers = model.config.text_config.num_hidden_layers
+    if "hidden_size" not in model.config:
+        model.config.hidden_size = model.config.text_config.hidden_size
+
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     tokenizer.pad_token = tokenizer.eos_token
 

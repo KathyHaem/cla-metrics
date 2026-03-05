@@ -1,0 +1,13 @@
+name: cla-eflomal
+dependencies:
+  - python==3.10
+  - gxx_linux-64
+  - gcc_linux-64
+  - libxcrypt
+  - pip
+  - pip:
+    - langcodes
+    - torch --index-url https://download.pytorch.org/whl/cpu
+    - transformers
+    - datasets
+    - git+https://github.com/robertostling/eflomal.git

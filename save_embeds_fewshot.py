@@ -7,7 +7,7 @@ from datasets import load_dataset, Dataset
 from langcodes import Language
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModel, AutoTokenizer, cache_utils, AutoModelForCausalLM
+from transformers import AutoModel, AutoTokenizer, cache_utils, AutoModelForCausalLM, AutoModelForImageTextToText
 import json
 from copy import deepcopy
 
@@ -40,7 +40,7 @@ def cache_prefix(model, tokenizer, lang, glossary, batch_size):
     tokenized = tokenizer([prompt], return_tensors="pt")
     t_ids = tokenized.input_ids.to("cuda:0")
     at_mask = tokenized.attention_mask.to("cuda:0")
-    outputs = model(t_ids, at_mask, use_cache=True)
+    outputs = model(t_ids, attention_mask=at_mask, use_cache=True)
     return broadcast_cache(outputs.past_key_values, batch_size)
 
 @torch.no_grad()
@@ -56,7 +56,7 @@ def encode_batch(model, tokenizer, kv_cache, cache_mask, sentences):
     at_mask = inputs.attention_mask.to(cache_mask.device)
     
     outputs = model(t_ids,
-                    torch.cat((cache_mask, at_mask), dim=1),
+                    attention_mask=torch.cat((cache_mask, at_mask), dim=1),
                     past_key_values = kv_cache,
                     output_hidden_states=True)
     
@@ -108,9 +108,18 @@ def main(dataset_name, model_name, langs, batch_size, sent_rep, overwrite=False)
         raise NotImplementedError
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+                                                     attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+    except ValueError:
+        model = AutoModelForImageTextToText.from_pretrained(model_name, device_map="auto",
+                                                            attn_implementation="flash_attention_2",
+                                                            dtype=torch.bfloat16)
     model = torch.compile(model)
     model.eval()
+
+    if "num_hidden_layers" not in model.config:
+        model.config.num_hidden_layers = model.config.text_config.num_hidden_layers
 
     model_short_name = model_name.split("/")[-1]
     out_path = f"embeds/{dataset_name}"
