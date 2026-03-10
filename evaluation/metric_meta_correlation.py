@@ -22,8 +22,8 @@ def main(model: str):
                 print("Key error for", metric, sent_rep, file=sys.stderr)
                 continue
 
-            cla_en = [get_alignment(current_cla, lang, "en") for lang in ALL_LANGUAGES_NO_EN]
-            cla_rest = [get_alignment(current_cla, lang, "MEAN", exclude_targets=["en"]) for lang in ALL_LANGUAGES_NO_EN]
+            cla_en = [get_alignment(current_cla, lang, "en", layer="HIGHEST") for lang in ALL_LANGUAGES_NO_EN]
+            cla_rest = [get_alignment(current_cla, lang, "MEAN", exclude_targets=["en"], layer="HIGHEST") for lang in ALL_LANGUAGES_NO_EN]
             corr_table_layer_mean[s_i, m_i] = pearsonr(cla_en, cla_rest).correlation
 
             if np.isnan(pearsonr(cla_en, cla_rest).correlation):

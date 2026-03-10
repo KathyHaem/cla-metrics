@@ -5,15 +5,15 @@ import sys
 import os
 from typing import Literal
 from cla_utils import ALL_LANGUAGES, METRICS, SENT_REPS, REPS_SHORT_NAMES, METRICS_SHORT_NAMES, FULL_MODELS, get_cla_all, get_alignment, df_to_tex
-from monolingual_task import load_task_scores
+from monolingual_task_corr import load_task_scores
 from task_results import SHORT_MODELS_DICT, SHORT_MODELS
 import argparse
 
-ROWS = ["correlation", "representation", " CLA metric"]
+ROWS = ["correlation", "representation", "CLA metric"]
 
 def main(tgt_lang: Literal["en", "MEAN"],
          task: Literal["sib-200", "belebele"] = "sib-200",
-         layer_pooling: Literal["MEAN", "HIGHEST", "best"] = "MEAN"):
+         layer_pooling: Literal["MEAN", "HIGHEST", "best"] = "HIGHEST"):
     ALL_LANGUAGES_NO_EN = ALL_LANGUAGES.copy()
     ALL_LANGUAGES_NO_EN.remove("en")
 
@@ -51,7 +51,7 @@ def main(tgt_lang: Literal["en", "MEAN"],
                           label=f"overview-corr-{tgt_lang}-task-{task}",
                           highlight_max=False,
                           heatmap=False,
-                          separate_last_col=False))
+                          eflomal_in_last_col=False))
 
 
 if __name__ == "__main__":

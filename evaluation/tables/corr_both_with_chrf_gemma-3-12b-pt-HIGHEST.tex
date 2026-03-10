@@ -1,0 +1,18 @@
+\setlength{\tabcolsep}{4.5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}%
+{X | c  c  c  c  c  c | c}
+        \toprule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{48}{0}\hspace{0.6em}/26 & \percentGrad{65}{0}\hspace{0.6em}/44 & \percentGrad{60}{0}\hspace{0.6em}/23 & \percentGrad{60}{0}\hspace{0.6em}/23 & \percentGrad{61}{0}\hspace{0.6em}/23 & --/-- & \percentGrad{66}{2} \\
+        \textbf{last} & \percentGrad{27}{0}\hspace{0.6em}/11 & \percentGrad{62}{0}\hspace{0.6em}/49 & \percentGrad{71}{0}\hspace{0.6em}/58 & \percentGrad{71}{0}\hspace{0.6em}/58 & \percentGrad{71}{0}\hspace{0.6em}/58 & \percentGrad{59}{0}\hspace{0.6em}/49 & \percentGrad{66}{2} \\
+        \textbf{p-wm} & \percentGrad{65}{0}\hspace{0.6em}/53 & \percentGrad{74}{1}\hspace{0.6em}/\textbf{72} & \percentGrad{63}{0}\hspace{0.6em}/53 & \percentGrad{63}{0}\hspace{0.6em}/53 & \percentGrad{63}{0}\hspace{0.6em}/53 & --/-- & \percentGrad{66}{0}\hspace{0.6em}/50 \\
+        \textbf{mean} & --/14 & \percentGrad{74}{1}\hspace{0.6em}/70 & \percentGrad{58}{0}\hspace{0.6em}/48 & \percentGrad{58}{0}\hspace{0.6em}/48 & \percentGrad{58}{0}\hspace{0.6em}/48 & --/-- & \percentGrad{66}{2} \\
+        \textbf{prompt} & --/-- & \percentGrad{62}{0}\hspace{0.6em}/66 & \percentGrad{59}{0}\hspace{0.6em}/56 & \percentGrad{59}{0}\hspace{0.6em}/56 & \percentGrad{60}{0}\hspace{0.6em}/56 & --/-- & \percentGrad{66}{2} \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Pearson correlation measured first across the \texttt{src} languages with a fixed \texttt{tgt} language and then averaged over the target language. The correlation is measured between the \texttt{en-tgt} (left side of the '/' symbol) or \texttt{src-tgt} (right side of the '/' symbol) alignment score and the \textsc{chrF} score in the \texttt{tgt} language for gemma-3-12b-pt. Values are displayed as per cent. Cell colours are based on the \texttt{en-tgt} scores.}
+    \label{tab:corr-both-with-chrf-gemma-3-12b-pt-HIGHEST}
+\end{table}

@@ -4,6 +4,9 @@ from typing import Union, Literal
 from collections.abc import Iterable
 import numpy as np
 import pandas as pd
+import re
+from langcodes import Language
+
 
 from constants import ALL_LANGUAGES
 
@@ -30,6 +33,10 @@ FULL_MODELS = [
     "google/gemma-3-12b-pt",
     "mistralai/Ministral-3-14B-Base-2512",
 ]
+
+# shorten models: "mistralai/Ministral-3-14B-Base-2512" -> "Ministral-3"
+SHORT_MODELS = [re.search(r"([A-Za-z]+[^a-zA-Z\d\s:]?[0-9]+).*", model.split("/")[1]).group(1) for model in FULL_MODELS]
+SHORT_MODELS_DICT = {model: re.search(r"([A-Za-z]+[^a-zA-Z\d\s:]?[0-9]+).*", model.split("/")[1]).group(1) for model in FULL_MODELS}
 
 def get_cla_all(model: str) -> dict:
     """
@@ -156,9 +163,11 @@ def df_to_tex(df: pd.DataFrame,
               heatmap=True,
               grad_command="",
               highlight_max=False,
-              separate_last_col=True,
+              highlight_max_in_each_row=False,
+              eflomal_in_last_col=True,
               custom_colspec="",
-              custom_header="") -> str:
+              custom_header="",
+              rounding_digits=1) -> str:
     """
     Converts the dataframe into a formate TeX table.
 
@@ -176,30 +185,36 @@ def df_to_tex(df: pd.DataFrame,
     :type grad_command: str 
     :param highlight_max: Highlight the maximum value in the table?
     :type highlight_max: bool
-    :param separate_last_col: Separate the last column with a vertical line?
-    :type separate_last_col: bool
+    :param highlight_max_in_each_row: Highlight the maximum value in each row instead of the whole table?
+    :type highlight_max_in_each_row: bool
+    :param eflomal_in_last_col: Is Eflomal column in the last column?
+    :type eflomal_in_last_col: bool
     :param custom_colspec: Custom column specification for the tabularx environment.
     :type custom_colspec: str
     :param custom_header: Custom header for the table.
     :type custom_header: str
+    :param rounding_digits: Number of digits to round the values to.
+    :type rounding_digits: int
 
     :return: A TeX table string.
     :rtype: str
     """
-    def print_value(val):
+    def print_value(val, max_val, background_only=False):
         if isinstance(val, str):
             return val
 
         if np.isnan(val):
             return "--"
 
-        percents = round(val*100, 1)
+        percents = round(val*100, rounding_digits) + 0.0 # to avoid -0.0
 
         if heatmap:
-            if highlight_max and max_value - percents <= 0.1:
+            if background_only:
+                return f"{grad_command}{{{percents}}}{{2}}"
+            if highlight_max and max_val - percents <= 0.1:
                 return f"{grad_command}{{{percents}}}{{1}}"
             return f"{grad_command}{{{percents}}}{{0}}"
-        if highlight_max and max_value - percents <= 0.1:
+        if highlight_max and max_val - percents <= 0.1:
             return f"\\textbf{{{percents}}}"
         return f"{percents}"
 
@@ -214,12 +229,17 @@ def df_to_tex(df: pd.DataFrame,
         
         return "".join(process_char(c) for c in label)
     
+    if eflomal_in_last_col:
+        # extract the only non-nan value
+        eflomal_value = df["Eflo"][df["Eflo"].first_valid_index()]
+    
     grad_command_defined = False
     if not grad_command:
         grad_command = f'\\{make_alphabetic_command_name(label)}Grad'
         grad_command_defined = True
 
-    if heatmap or highlight_max:
+    max_value = None
+    if (heatmap and grad_command_defined) or highlight_max:
         max_value = df.max(axis=None)*100
     lines = []
     if heatmap and grad_command_defined:
@@ -230,15 +250,16 @@ def df_to_tex(df: pd.DataFrame,
         r'\begin{table}[ht]',
         r'    \centering\footnotesize',
         f'    \\begin{{tabularx}}{{\columnwidth}}%',
-        custom_colspec if custom_colspec else '    {{{"X | " if use_index_column else ""}{("  ".join(["c"] * (len(df.columns) - 1)) + (" | c" if separate_last_col else " c"))}}}',
+        custom_colspec if custom_colspec else f'    {{{"p{4em} | " if use_index_column else ""}{("  ".join(["C"] * (len(df.columns) - 1)) + (" | C" if eflomal_in_last_col else "  C"))}}}',
         r'        \toprule',
         custom_header if custom_header else f'        {" & " if use_index_column else ""}{" & ".join([f"\\textbf{{{col}}}" for col in df.columns])} \\\\',
         r'        \midrule'
     ]
 
-    for i, row in df.iterrows():
+    for row_num, (i, row) in enumerate(df.iterrows()):
         lines += [
-            f'        {"\\textbf{" + str(i) + "} & " if use_index_column else ""}{" & ".join([str(print_value(val)) for val in row])} \\\\'
+            f'        {"\\textbf{" + str(i) + "} & " if use_index_column else ""}{" & ".join([str(print_value(val, max_val=max(row)*100 if highlight_max_in_each_row else max_value)) for val in row])} \\\\' if not eflomal_in_last_col else f'        {"\\textbf{" + str(i) + "} & " if use_index_column else ""}{" & ".join([str(print_value(val, max_val=max_value)) for val in row[:-1]])} & {print_value(eflomal_value, background_only=row_num != df.shape[0]//2, max_val=max_value)} \\\\'
+
         ]
     
     lines += [
@@ -257,3 +278,22 @@ def get_translation_scores(model: str, metric: Literal["chrf", "mutinf"]) -> dic
         pmi_dict = json.load(f)
 
     return {k: v["mean"] for k, v in pmi_dict.items()}
+
+def get_flores_code(short_code: str):
+    custom_codes = {
+        "ar": "arb_Arab",
+        "zh": "zho_Hant",
+        "az": "azj_Latn",
+        "fa": "pes_Arab",
+        "jv": "jav_Latn",
+        "ko": "kor_Hang",
+        "tl": "tgl_Latn",
+        "sw": "swh_Latn"
+    }
+
+    if short_code in custom_codes:
+        return custom_codes[short_code]
+
+    lang = Language.get(short_code)
+    script = lang.script or lang.assume_script().script
+    return f"{lang.to_alpha3()}_{script}"

@@ -1,0 +1,18 @@
+\setlength{\tabcolsep}{4.5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}%
+    {p{4em} | C  C  C  C  C  C | C}
+        \toprule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{46.6}{0} & \percentGrad{68.5}{0} & \percentGrad{70.0}{0} & \percentGrad{70.0}{0} & \percentGrad{70.0}{0} & -- & \percentGrad{34.5}{2} \\
+        \textbf{last} & \percentGrad{61.4}{0} & \percentGrad{69.3}{0} & \percentGrad{76.7}{1} & \percentGrad{76.7}{1} & \percentGrad{76.7}{1} & \percentGrad{71.4}{0} & \percentGrad{34.5}{2} \\
+        \textbf{p-wm} & \percentGrad{64.7}{0} & \percentGrad{71.0}{0} & \percentGrad{65.3}{0} & \percentGrad{65.3}{0} & \percentGrad{65.3}{0} & -- & \percentGrad{34.5}{0} \\
+        \textbf{mean} & \percentGrad{52.8}{0} & \percentGrad{70.5}{0} & \percentGrad{56.2}{0} & \percentGrad{56.2}{0} & \percentGrad{56.2}{0} & -- & \percentGrad{34.5}{2} \\
+        \textbf{prompt} & -- & \percentGrad{71.6}{0} & \percentGrad{68.6}{0} & \percentGrad{68.6}{0} & \percentGrad{68.6}{0} & -- & \percentGrad{34.5}{2} \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Pearson correlation measured first across the \texttt{src} languages with a fixed \texttt{tgt} language and then averaged over the target language. The correlation is measured between the \texttt{tgt-tgt} alignment score and the \textsc{chrF} score in the \texttt{tgt} language for Ministral-3-14B-Base-2512. Values are displayed as per cent.}
+    \label{tab:corr-tgt-with-chrf-Ministral-3-14B-Base-2512-HIGHEST}
+\end{table}

@@ -1,4 +1,4 @@
-import monolingual_task
+import evaluation.monolingual_task_corr as monolingual_task_corr
 from typing import Literal
 import numpy as np
 import pandas as pd
@@ -30,7 +30,7 @@ def join_into_tex_table(best_layer_tablesper_model: dict, task: Literal["sib-200
 
 def main(task: Literal["sib-200", "belebele"] = "sib-200"):
     best_layer_tables_per_model = {
-        model: monolingual_task.main(model, tgt_lang="en", task=task, layer_pooling="best", no_print=True)[1]
+        model: monolingual_task_corr.main(model, tgt_lang="en", task=task, layer_pooling="best", no_print=True)[1]
         for model in models_to_compare
     }
 

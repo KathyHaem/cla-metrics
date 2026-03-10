@@ -1,12 +1,13 @@
 \setlength{\tabcolsep}{4.5pt}
 \begin{table}[ht]
     \centering\footnotesize
-    \begin{tabularx}{\columnwidth}{X | c  c c}
+    \begin{tabularx}{\columnwidth}%
+    {X | c  c c}
         \toprule
          & \textbf{Qwen3} & \textbf{gemma-3} & \textbf{Ministral-3} \\
         \midrule
-        \textbf{correlation} & 78.7 & 69.8 & 89.0 \\
-        \textbf{representation} & p-wm & last & prompt \\
+        \textbf{correlation} & 82.6 & 70.9 & 97.5 \\
+        \textbf{representation} & prompt & p-wm & prompt \\
         \textbf{ CLA metric} & abs & cos & abs \\
         \bottomrule
     \end{tabularx}

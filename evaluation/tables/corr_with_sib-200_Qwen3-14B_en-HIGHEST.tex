@@ -1,17 +1,18 @@
 \setlength{\tabcolsep}{4.5pt}
 \begin{table}[ht]
     \centering\footnotesize
-    \begin{tabularx}{\columnwidth}{X | c  c  c  c  c  c | c}
+    \begin{tabularx}{\columnwidth}%
+    {X | c  c  c  c  c  c | c}
         \toprule
          & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
         \midrule
-        \textbf{fewshot} & \percentGrad{35.0}{0} & \percentGrad{35.9}{0} & \percentGrad{69.9}{0} & \percentGrad{69.9}{0} & \percentGrad{70.1}{0} & -- & -- \\
-        \textbf{last} & \percentGrad{31.5}{0} & \percentGrad{32.7}{0} & \percentGrad{61.6}{0} & \percentGrad{61.6}{0} & \percentGrad{61.4}{0} & \percentGrad{58.4}{0} & -- \\
-        \textbf{p-wm} & \percentGrad{53.9}{0} & \percentGrad{73.1}{0} & \percentGrad{79.9}{0} & \percentGrad{79.9}{0} & \percentGrad{80.0}{0} & -- & -- \\
-        \textbf{mean} & \percentGrad{37.6}{0} & \percentGrad{74.7}{0} & \percentGrad{79.6}{0} & \percentGrad{79.6}{0} & \percentGrad{79.7}{0} & -- & \percentGrad{28.7}{0} \\
-        \textbf{prompt} & -- & \percentGrad{81.8}{0} & \percentGrad{82.6}{1} & \percentGrad{82.6}{1} & \percentGrad{82.5}{0} & -- & -- \\
+        \textbf{fewshot} & \percentGrad{35.0}{0} & \percentGrad{35.9}{0} & \percentGrad{69.9}{0} & \percentGrad{69.9}{0} & \percentGrad{70.1}{0} & -- & \percentGrad{28.7}{2} \\
+        \textbf{last} & \percentGrad{31.5}{0} & \percentGrad{32.7}{0} & \percentGrad{61.6}{0} & \percentGrad{61.6}{0} & \percentGrad{61.4}{0} & \percentGrad{58.4}{0} & \percentGrad{28.7}{2} \\
+        \textbf{p-wm} & \percentGrad{53.9}{0} & \percentGrad{73.1}{0} & \percentGrad{79.9}{0} & \percentGrad{79.9}{0} & \percentGrad{80.0}{0} & -- & \percentGrad{28.7}{0} \\
+        \textbf{mean} & \percentGrad{37.6}{0} & \percentGrad{74.7}{0} & \percentGrad{79.6}{0} & \percentGrad{79.6}{0} & \percentGrad{79.7}{0} & -- & \percentGrad{28.7}{2} \\
+        \textbf{prompt} & -- & \percentGrad{81.8}{0} & \percentGrad{82.6}{1} & \percentGrad{82.6}{1} & \percentGrad{82.5}{0} & -- & \percentGrad{28.7}{2} \\
         \bottomrule
     \end{tabularx}
-    \caption{Pearson correlation measured across the \texttt{src} languages of \texttt{src-en} alignment score and the \textbf{{SIB-200}} \(F_1\) score in the \texttt{src} language for Qwen3-14B.  Values are displayed as per cent.}
+    \caption{Pearson correlation measured across the \texttt{src} languages of \texttt{src-en} alignment score and the \textbf{{SIB-200}} \(F_1\) score in the \texttt{src} language for Qwen3-14B.   Values are displayed as per cent.}
     \label{tab:corr-en-task-sib-200-Qwen3-14B-HIGHEST}
 \end{table}

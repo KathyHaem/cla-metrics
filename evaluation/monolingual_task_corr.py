@@ -8,7 +8,7 @@ import os
 from typing import Literal
 import json
 
-def load_task_scores(model: str, task: Literal["sib-200", "belebele", "translation"]) -> dict:
+def load_task_scores(model: str, task: Literal["sib-200", "belebele", "translation", "pmi"]) -> dict:
     match task:
         case "sib-200":
             with open(os.path.join("scores", "sib-200", f"{model.split('/')[1]}.json")) as f:
@@ -20,6 +20,10 @@ def load_task_scores(model: str, task: Literal["sib-200", "belebele", "translati
             with open(os.path.join("scores", "translation_chrf", f"{model.split('/')[1]}.json")) as f:
                 translation_data = json.load(f)
             return {k: v["mean"] for k, v in translation_data.items()}
+        case "pmi":
+            with open(os.path.join("scores", "translation_mutinf", f"{model.split('/')[1]}.json")) as f:
+                pmi_data = json.load(f)
+            return {k: v["mean"] for k, v in pmi_data.items()}
 
 def main(model: str, 
          tgt_lang: Literal["en", "MEAN"], 
@@ -80,7 +84,7 @@ def main(model: str,
     os.makedirs("evaluation/tables", exist_ok=True)
     with open(f"evaluation/tables/corr_with_{task}_{model.split('/')[1]}_{tgt_lang}{'-HIGHEST' if layer_pooling == 'HIGHEST' else ''}.tex", "w") as f:
         f.write(df_to_tex(df, 
-                          caption=f"Pearson correlation measured across the \\texttt{{src}} languages of \\texttt{{src-{'en' if tgt_lang == 'en' else '[\\textasciitilde{{}}en]'}}} alignment score and the {'\\textbf{{SIB-200}} \\(F_1\\) score' if task == 'sib-200' else '\\textbf{{Belebele}} accuracy'} in the \\texttt{{src}} language for {model.split('/')[1]}. {'The layer with the highest correlation is selected for each metric and sentence representation.' if layer_pooling == 'best' else ''} Values are displayed as per cent.", 
+                          caption=f"Pearson correlation measured across the \\texttt{{src}} languages of \\texttt{{src-{'en' if tgt_lang == 'en' else '[\\textasciitilde{{}}en]'}}} alignment score and the {'\\textbf{{SIB-200}} \\(F_1\\) score' if task == 'sib-200' else '\\textbf{{Belebele}} accuracy'} in the \\texttt{{src}} language for {model.split('/')[1]}. {'The layer with the highest correlation is selected for each metric and sentence representation.' if layer_pooling == 'best' else ' '} Values are displayed as per cent.", 
                           label=f"corr-{tgt_lang}-task-{task}-{model.split('/')[1]}-{layer_pooling}",
                           grad_command="\\percentGrad", highlight_max=True))
 
@@ -93,7 +97,7 @@ if __name__ == "__main__":
         parser.add_argument("--model", type=str, help="Model ID.", default="Qwen/Qwen3-14B")
         parser.add_argument("--tgt-lang", type=str, help="Target language.", default="en")
         parser.add_argument("--task", type=str, help="Task name.", choices=["sib-200", "belebele"], default="sib-200")
-        parser.add_argument("--layer-pooling", type=str, help="Layer pooling method.", choices=["MEAN", "HIGHEST", "best"], default="MEAN")
+        parser.add_argument("--layer-pooling", type=str, help="Layer pooling method.", choices=["MEAN", "HIGHEST", "best"], default="HIGHEST")
 
         args = parser.parse_args()
         main(args.model, args.tgt_lang, args.task, args.layer_pooling)

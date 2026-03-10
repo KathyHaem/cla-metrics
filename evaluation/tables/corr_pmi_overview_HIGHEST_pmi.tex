@@ -1,0 +1,17 @@
+\setlength{\tabcolsep}{4.5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}%
+    {p{4em} | C  C  C}
+        \toprule
+         & \textbf{Qwen3} & \textbf{gemma-3} & \textbf{Ministral-3} \\
+        \midrule
+        \textbf{corr. combined} & \percentGrad{90.5}{0} & \percentGrad{71.5}{0} & \percentGrad{85.7}{0} \\
+        \textbf{\texttt{src-tgt} weight} & \percentGrad{4.0}{0} & \percentGrad{0.0}{0} & \percentGrad{0.0}{0} \\
+        \textbf{representation} & p-wm & p-wm & p-wm \\
+        \textbf{CLA metric} & cos & cos & ratio \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Overview of the best correlations between the optimal convex combination of \texttt{src-en}, \texttt{en-tgt}, and \texttt{src-tgt} and the translation PMI scores. Values are shown as per cent.}
+    \label{tab:corrPmiOverviewHIGHEST_pmi}
+\end{table}
