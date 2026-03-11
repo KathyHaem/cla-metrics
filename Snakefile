@@ -40,10 +40,10 @@ rule all:
                short=MODELS.keys()),
         # expand("scores/comet/{short}.json",
         #        short=MODELS.keys()),
-        expand("scores/belebele/{short}_acc.json",
-               short=MODELS.keys()),
-        expand("scores/sib-200/{short}.json",
-               short=MODELS.keys()),
+        # expand("scores/belebele/{short}_acc.json",
+        #        short=MODELS.keys()),
+        # expand("scores/sib-200/{short}.json",
+        #        short=MODELS.keys()),
         # expand("scores/eflomal/{model}.json",
         #        model=MODELS.keys())
 
@@ -245,9 +245,10 @@ rule calc_scores:
         "calc_scores.py"
 
 rule save_embeds:
+    input:
+        "definitions.json"
     output:
-        expand("embeds/flores/{{short}}-{{sent_rep}}-{lang}.pickle", lang=ALL_LANGUAGES)
-    # noinspection PyUnresolvedReferences
+        expand("embeds/flores/{{short}}-{{sent_rep}}-{lang}.pickle", lang=ALL_LANGUAGES),
     params:
         dataset="flores",
         model=lambda wildcards: MODELS[wildcards.short],
@@ -255,7 +256,6 @@ rule save_embeds:
         sent_rep=lambda wildcards: wildcards.sent_rep,
         batch_size=10,
         overwrite=False
-    # noinspection PyUnresolvedReferences
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
@@ -265,6 +265,17 @@ rule save_embeds:
         "envs/transformers.yaml"
     script:
         "save_embeds.py"
+
+rule save_definitions:
+    output:
+        "definitions.json"
+    resources:
+        mem_mb=2000,
+        slurm_partition=CPU_PARTITION
+    conda:
+        "envs/transformers.yaml"
+    script:
+        "get_word_definitions.py"
 
 # Eflomal
 
