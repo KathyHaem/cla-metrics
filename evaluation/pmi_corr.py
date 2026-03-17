@@ -7,6 +7,25 @@ import argparse
 import numpy as np
 import sys
 from typing import Literal
+import matplotlib.pyplot as plt
+
+def plot_alpha_beta(corrs, steps, best_alpha_idx, best_beta_idx, model, layer_pooling, metric, sent_rep):
+    fig, ax = plt.subplots(figsize=(3.8, 3))
+    im = ax.matshow(corrs, cmap="BuPu", interpolation="nearest")
+    fig.colorbar(im, ax=ax, label="Correlation")
+    ax.set_xlabel("$\\beta$ (en-tgt weight)")
+    ax.set_ylabel("$\\alpha$ (src-en weight)")
+    ax.set_xticks(np.linspace(0, steps - 1, 6))
+    ax.set_xticklabels(np.linspace(0, steps - 1, 6)/(steps - 1))
+    ax.set_yticks(np.linspace(0, steps - 1, 6))
+    ax.set_yticklabels(np.linspace(0, steps - 1, 6)/(steps - 1))
+
+    ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
+    ax.plot(best_beta_idx, best_alpha_idx, "o", color="red", markersize=5, markeredgecolor="white", markeredgewidth=0.5)
+
+    fig.tight_layout()
+    os.makedirs("evaluation/plots", exist_ok=True)
+    fig.savefig(f"evaluation/plots/alpha_beta_{model.split('/')[1]}_{layer_pooling}_{metric}_{sent_rep}.pdf")
 
 def calculate_table(model: str, 
          layer_pooling: Literal["MEAN", "HIGHEST", "best"] = "HIGHEST",
@@ -43,14 +62,20 @@ def calculate_table(model: str,
                 for beta_step, beta in enumerate(np.linspace(0, 1 - alpha, STEPS - alpha_step)):
                     combined_alignments = alpha * alignments_src_en + beta * alignments_en_tgt + (1-alpha-beta) * alignments_src_tgt
                     corr = pearsonr(combined_alignments, translation_pmis).correlation
-                    corrs[int(alpha*(STEPS-1)), int(beta*(STEPS-1))] = corr
+                    if alpha_step == 8 and beta_step == 16:
+                        pass
+                    corrs[alpha_step, beta_step] = corr
             
             corr_table[s_i, m_i] = np.nanmax(corrs)
             if np.isnan(corrs).all():
                 continue
-            best_alpha, best_beta = np.unravel_index(np.nanargmax(corrs.flatten()), corrs.shape)
-            best_alpha /= (STEPS-1)
-            best_beta /= (STEPS-1)
+            best_alpha_idx, best_beta_idx = np.unravel_index(np.nanargmax(corrs.flatten()), corrs.shape)
+            best_alpha = best_alpha_idx / (STEPS - 1)
+            best_beta = best_beta_idx / (STEPS - 1)
+            # corrs[corrs == -1] = np.nan
+
+            plot_alpha_beta(corrs, STEPS, best_alpha_idx, best_beta_idx, model, layer_pooling, metric, sent_rep)
+
             gammas_table[s_i, m_i] = 1 - best_alpha - best_beta
 
     if no_print:
