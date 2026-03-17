@@ -38,14 +38,12 @@ rule all:
                short=MODELS.keys()),
         expand("scores/dali_belebele/{short}.json",
                short=MODELS.keys()),
-        # expand("scores/comet/{short}.json",
-        #        short=MODELS.keys()),
-        # expand("scores/belebele/{short}_acc.json",
-        #        short=MODELS.keys()),
-        # expand("scores/sib-200/{short}.json",
-        #        short=MODELS.keys()),
-        # expand("scores/eflomal/{model}.json",
-        #        model=MODELS.keys())
+        expand("scores/belebele/{short}_acc.json",
+               short=MODELS.keys()),
+        expand("scores/sib-200/{short}.json",
+               short=MODELS.keys()),
+        expand("scores/eflomal/{model}.json",
+               model=MODELS.keys())
 
 rule belebele:
     output:
