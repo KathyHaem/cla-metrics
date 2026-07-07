@@ -247,7 +247,8 @@ def main(model: str,
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model, snakemake.params.layer_pooling, snakemake.params.tgt_lang_cla)
     else:
         parser = argparse.ArgumentParser(description="Calculate the correlations between src-tgt and chrF for translation task.")

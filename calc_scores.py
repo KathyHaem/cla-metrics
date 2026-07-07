@@ -109,7 +109,8 @@ def main(model, dataset, sent_rep, requested_scores, overwrite=False):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model, 
              snakemake.params.dataset, 
              snakemake.params.sent_rep, 

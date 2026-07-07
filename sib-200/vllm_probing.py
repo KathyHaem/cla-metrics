@@ -4,21 +4,43 @@ import json
 import argparse
 import tempfile
 import shutil
+import torch
 
-from numpy import dtype
+import sys
+from pathlib import Path
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from tqdm import tqdm
 from sklearn.metrics import f1_score
 
 from langcodes import Language
 from datasets import load_dataset
 from vllm import LLM, SamplingParams
+from transformers import AutoTokenizer
 
 from constants import ALL_LANGUAGES
 
 TOPICS = ["science/technology", "travel", "politics", "sports", "health", "entertainment", "geography"]
 PROMPT = """Classify the following text into one of these topics: "science/technology", "travel", "politics", "sports", "health", "entertainment", "geography". Provide only the topic in English as your response.
 
-text: `{}`
-topic: `"""
+text: `{}`"""
+PROMPT_BASE_SUFFIX = "\ntopic: `"
+
+def prepare_prompt(text: str, is_base: bool, is_thinking: bool):
+    if is_base:
+        return PROMPT.format(text) + PROMPT_BASE_SUFFIX
+    return [
+    {"role": "system", "content": ""},
+    {
+        "role": "user",
+        "content": PROMPT.format(text),
+    },
+    {
+        "role": "assistant",
+        "content": ("<think>\n\n</think>\n\n" if is_thinking else "") + "The topic is: `",
+    }]
 
 def get_flores_code(short_code: str):
     lang = Language.get(short_code)
@@ -45,30 +67,42 @@ def process_answer(ans: str):
 
 
 def main(model_name, langs):
+    is_base = "base" in model_name.lower() or "pt" in model_name.lower()
+    is_thinking = model_name in ["Qwen/Qwen3-14B"]
+
     os.makedirs(os.path.join("scores", "sib-200"), exist_ok=True)
     cahce_dir = tempfile.mkdtemp()
     os.environ["VLLM_CACHE_ROOT"] = cahce_dir
 
-    llm = LLM(model_name, max_model_len=10000, dtype="bfloat16")
-    basic_sampling = SamplingParams(temperature=0, max_tokens=16, stop=["\n", "`"])
+    llm = LLM(
+        model_name, 
+        max_model_len=2048, 
+        dtype="bfloat16",
+        tensor_parallel_size=torch.cuda.device_count(),
+        gpu_memory_utilization=0.8,
+        )
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    
+    sampling_params = SamplingParams(temperature=0, max_tokens=16, stop=["\n", "`"], stop_token_ids=[tokenizer.eos_token_id])
 
     f1s = dict()
-    for i, lang in enumerate(langs):
+    for i, lang in tqdm(enumerate(langs), total=len(langs)):
         print(f"Running on languege {i}/{len(langs)}: {lang}")
         full_code = get_flores_code(lang)
         dataset = load_dataset("Davlan/sib200", full_code, split="test")
-        prompts = list(map(PROMPT.format, dataset["text"]))
+        prompts = list(map(lambda x: prepare_prompt(x, is_base=is_base, is_thinking=is_thinking), dataset["text"]))
+        if not is_base:
+            prompts = tokenizer.apply_chat_template(prompts, tokenize=True, continue_final_message=True).input_ids
         targets = dataset["category"]
 
         outputs = llm.generate(
-            prompts=prompts,
-            sampling_params=basic_sampling#sampling_params,
-        )
+                prompts=prompts,
+                sampling_params=sampling_params,
+                use_tqdm=False
+            )
 
 
         answers = [process_answer(output.outputs[0].text) for output in outputs]
-        # correct = sum(1 for a, t in zip(answers, targets) if a == t)
-        # accuracy = correct / len(targets)
         macro_f1 = f1_score(targets, answers, labels=TOPICS, average='macro', zero_division=0)
         f1s[lang] = macro_f1
 
@@ -79,7 +113,8 @@ def main(model_name, langs):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model,
              snakemake.params.langs)
     else:

@@ -58,7 +58,8 @@ def main(model_id, src_lang, tgt_langs):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model,
              snakemake.params.src_lang,
              snakemake.params.langs)

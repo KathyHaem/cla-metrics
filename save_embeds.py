@@ -42,15 +42,24 @@ def extract_last(data, mask):
 
     return data[torch.arange(data.size(0)), last_indices, :]
 
+def get_prompt_conversation(text: str, is_thinking: bool):
+    return [
+        {"role": "user", "content": f"Summarize the following sentence in one word: {text}"},
+        {"role": "assistant", "content": ("<think>\n\n</think>\n\n" if is_thinking else "") + "The sentence can be summarized in one word as: `"},
+    ]
 
-def encode_batch(batch, model, tokenizer, sent_rep, key="sentence"):
+def encode_batch(batch, model, tokenizer, sent_rep, is_base: bool, is_thinking: bool, key="sentence"):
     out_dict = {}
     if not tokenizer.pad_token:
         tokenizer.pad_token = tokenizer.eos_token
     if sent_rep == "prompt":
         tokenizer.padding_side = "left"
-        batch[key] = [SENT_SUMM_TEMPLATE.format(sent=sent) for sent in batch[key]]
-        inputs = tokenizer(batch[key], padding=True, truncation=True, return_tensors="pt")
+        if is_base:
+            batch[key] = [SENT_SUMM_TEMPLATE.format(sent=sent) for sent in batch[key]]
+            inputs = tokenizer(batch[key], padding=True, truncation=True, return_tensors="pt")
+        else:
+            prompts = [get_prompt_conversation(sent, is_thinking) for sent in batch[key]]
+            inputs = tokenizer.apply_chat_template(prompts, tokenize=True, add_generation_prompt=False, continue_final_message=True, return_tensors="pt", padding="longest")
         inputs = {k: v.cuda() for k, v in inputs.items()}
         with torch.no_grad():
             outputs = model(**inputs, output_hidden_states=True)
@@ -75,12 +84,14 @@ def encode_batch(batch, model, tokenizer, sent_rep, key="sentence"):
 
 
 def main(dataset_name, model_name, langs, sent_rep, batch_size, overwrite=False):
+    is_base = "base" in model_name.lower() or "pt" in model_name.lower()
+    is_thinking = model_name in ["Qwen/Qwen3-14B"]
     print("Available CUDA devices:", torch.cuda.device_count())
 
     if dataset_name != "flores":  # happy path or w/e. bit more effort if I do implement other datasets
         raise NotImplementedError
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, fix_mistral_regex=True)
     try:
         model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
     except ValueError:
@@ -95,7 +106,7 @@ def main(dataset_name, model_name, langs, sent_rep, batch_size, overwrite=False)
 
     print("Loading the entire dataset")
 
-    dataset = load_dataset("facebook/flores", data_dir="all", revision="refs/convert/parquet")["validation"]
+    dataset = load_dataset("facebook/flores", "all")["dev"]
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     
     
@@ -125,11 +136,11 @@ def main(dataset_name, model_name, langs, sent_rep, batch_size, overwrite=False)
         
 
         if sent_rep == "fewshot":
-            results = get_fewshot_embeds(model, tokenizer, dataloader, lang, flores_code, sent_rep)
+            results = get_fewshot_embeds(model, tokenizer, dataloader, lang, flores_code, sent_rep, is_base, is_thinking)
         else:
             results = {f"{sent_rep}_{layer}": [] for layer in range(model.config.num_hidden_layers + 1)}
             for batch in tqdm(dataloader, desc=f"Processing {lang} / {flores_code}"):
-                batch_results = (encode_batch(batch, model, tokenizer, sent_rep, key="sentence_"+flores_code))
+                batch_results = (encode_batch(batch, model, tokenizer, sent_rep, is_base, is_thinking, key="sentence_"+flores_code))
                 for key, value in batch_results.items():
                     results[key].append(value)
         out_dict[lang] = {k: torch.cat(v, dim=0) for k, v in results.items()}
@@ -143,7 +154,8 @@ def main(dataset_name, model_name, langs, sent_rep, batch_size, overwrite=False)
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.dataset, 
              snakemake.params.model, 
              snakemake.params.langs, 
@@ -159,7 +171,7 @@ if __name__ == "__main__":
         parser.add_argument("--langs", type=str, nargs="+", help="Languages to embed",
                             default=ALL_LANGUAGES)
 
-        parser.add_argument("--sent-rep", type=str, default="last-token", help="How to sentence rep",
+        parser.add_argument("--sent-rep", type=str, default="prompt", help="How to sentence rep",
                             choices=["mean", "weighted-mean", "prompt", "last-token", "fewshot"])
         parser.add_argument("--overwrite", action="store_true", help="Overwrite existing embeddings")
         parser.add_argument("--batch-size", type=int, default=10, help="Batch size for embedding calculation")

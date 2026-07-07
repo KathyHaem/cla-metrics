@@ -140,7 +140,8 @@ def calculate_table(model: str,
     
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         calculate_table(snakemake.params.model)
     else:
         parser = argparse.ArgumentParser(description="Calculate the correlation table for PMI.")

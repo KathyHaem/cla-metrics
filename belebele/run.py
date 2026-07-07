@@ -114,7 +114,7 @@ def main(model_id, langs, batch_size, max_samples = None):
         model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
     model = torch.compile(model)
     model.eval()
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, fix_mistral_regex=True)
     tokenizer.pad_token = tokenizer.eos_token
 
     results_loglik = dict()
@@ -177,7 +177,8 @@ def main(model_id, langs, batch_size, max_samples = None):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model,
              snakemake.params.langs,
              snakemake.params.batch_size)

@@ -56,7 +56,8 @@ def main(tgt_lang: Literal["en", "MEAN"],
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
 
         main(snakemake.params.tgt_lang, snakemake.params.task)
     else:

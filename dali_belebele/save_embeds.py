@@ -80,14 +80,14 @@ def main(model_id, lang, batch_size=10):
         model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto",
                                                             attn_implementation="flash_attention_2",
                                                             dtype=torch.bfloat16)
-    model = torch.compile(model)
+    # model = torch.compile(model)
     model.eval()
     if "num_hidden_layers" not in model.config:
         model.config.num_hidden_layers = model.config.text_config.num_hidden_layers
     if "hidden_size" not in model.config:
         model.config.hidden_size = model.config.text_config.hidden_size
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, fix_mistral_regex=True)
     tokenizer.pad_token = tokenizer.eos_token
 
     os.makedirs("embeds/dali-belebele/", exist_ok=True)
@@ -131,7 +131,8 @@ def main(model_id, lang, batch_size=10):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model, 
              snakemake.params.lang,
              snakemake.params.batch_size)

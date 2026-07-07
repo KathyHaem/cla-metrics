@@ -10,9 +10,9 @@ def sentence_level_chrf(refs, outs):
     return [computeChrF([r], [o], nworder=2, ncorder=6, beta=2)[1] for r, o in zip(refs, outs)]
 
 def score_one_src(args):
-    model_short, src_lang = args
+    model_short, src_lang, dataset = args
 
-    with open(f"translation/translations/{model_short}_{src_lang}.json") as f:
+    with open(f"translation/translations_{dataset}/{model_short}_{src_lang}.json") as f:
         translations = json.load(f)
 
     local = {}
@@ -27,10 +27,10 @@ def score_one_src(args):
     return local
 
 
-def main(model: str, langs: list[str]):
+def main(model: str, langs: list[str], dataset: str = "flores"):
     _, model_short = model.split("/")
 
-    tasks = [(model_short, src_lang) for src_lang in langs]
+    tasks = [(model_short, src_lang, dataset) for src_lang in langs]
 
     mean_chrf = {}
 
@@ -39,15 +39,17 @@ def main(model: str, langs: list[str]):
         for local in tqdm(pool.imap_unordered(score_one_src, tasks), total=len(tasks)):
             mean_chrf.update(local)
 
-    os.makedirs("scores/translation_chrf", exist_ok=True)
-    with open(f"scores/translation_chrf/{model_short}.json", "w") as f:
+    os.makedirs(f"scores/translation_{dataset}_chrf", exist_ok=True)
+    with open(f"scores/translation_{dataset}_chrf/{model_short}.json", "w") as f:
         json.dump(mean_chrf, f, indent=True)
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model,  
-             snakemake.params.langs)
+             snakemake.params.langs,
+             snakemake.params.dataset)
     
     else:
         parser = argparse.ArgumentParser(description="Save model embeddings for parallel data")
@@ -55,6 +57,7 @@ if __name__ == "__main__":
         parser.add_argument("--src-lang", type=str, help="Language to translate from", default="en")
         parser.add_argument("--langs", type=str, nargs="+", help="Languages to translate into",
                             default=ALL_LANGUAGES)
+        parser.add_argument("--dataset", type=str, help="Dataset to use", default="flores")
 
         args = parser.parse_args()
-        main(args.model, args.src_lang, args.langs)
+        main(args.model, args.src_lang, args.langs, args.dataset)

@@ -258,7 +258,8 @@ def main(model_id, langs):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model, snakemake.params.langs)
     else:
         parser = argparse.ArgumentParser()

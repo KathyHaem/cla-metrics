@@ -11,3 +11,4 @@ dependencies:
     - transformers
     - datasets
     - git+https://github.com/robertostling/eflomal.git
+    - snakemake==9.20.0

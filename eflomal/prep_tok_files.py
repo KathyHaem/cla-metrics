@@ -49,7 +49,7 @@ def get_tokens(dataset, model_id, src_lang, tgt_lang, src_key=None, tgt_key=None
     if tgt_key is None:
         tgt_key = tgt_lang
 
-    tokenizer = AutoTokenizer.from_pretrained(f"./eflomal/computations/{model_id.split('/')[1]}/tokenizer")
+    tokenizer = AutoTokenizer.from_pretrained(f"./eflomal/computations/{model_id.split('/')[1]}/tokenizer", fix_mistral_regex=True)
     src_tokens = dataset.map(lambda x: {
         'tok': tokenizer.convert_ids_to_tokens(tokenizer(x[src_key])['input_ids'], skip_special_tokens=True)})
     tgt_tokens = dataset.map(lambda x: {
@@ -94,7 +94,8 @@ def main(model_id: str, src_lang: str, tgt_lang: str, overwrite = False):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model, snakemake.params.src, snakemake.params.tgt)
     else:
         parser = argparse.ArgumentParser(description="Prepare tokenized files for fast_align.")

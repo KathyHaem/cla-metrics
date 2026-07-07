@@ -61,7 +61,8 @@ def main(task: Literal["sib-200", "belebele", "translation"]) -> None:
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.task)
     else:
         import argparse

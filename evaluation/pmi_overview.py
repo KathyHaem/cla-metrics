@@ -32,7 +32,8 @@ def main(layer_pooling: str = "HIGHEST", metric: str = "pmi"):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.layer_pooling)
     else:
         parser = argparse.ArgumentParser(description="Generate a LaTeX table comparing the best correlations between the optimal convex combination of \\texttt{src-en}, \\texttt{en-tgt}, and \\texttt{src-tgt} and the translation PMI for different models.")

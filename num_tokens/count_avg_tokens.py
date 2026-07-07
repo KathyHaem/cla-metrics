@@ -23,7 +23,7 @@ def get_flores_code(short_code: str):
 
 
 def main(model_name, langs):
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, fix_mistral_regex=True)
 
     model_short_name = model_name.split("/")[-1]
     out_path = "scores/num_tokens_flores/"

@@ -1,6 +1,6 @@
-from numpy import dtype
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
+from vllm.sampling_params import StructuredOutputsParams
 from datasets import load_dataset, Value
 from tqdm import tqdm
 import torch
@@ -14,6 +14,7 @@ import shutil
 
 from datasets.utils.logging import set_verbosity_error
 set_verbosity_error()
+
 
 def get_flores_code(short_code: str):
     custom_codes = {
@@ -35,16 +36,33 @@ def get_flores_code(short_code: str):
     return f"{lang.to_alpha3()}_{script}"
 
 
-def process_one_sample(context, question, options, target=None):
+def process_one_sample(context, question, options, target=None, is_base=False, is_thinking=False):
+    if is_base:
         return f"{context}\n\n{question}\n\n" + "\n".join(options) + "\n\n" + (options[target] if target is not None else "")
+    conversation = [
+        {"role": "user", "content": f"{context}\n\n{question}\n\n" + "\n".join(options)},
+    ]
+    if is_thinking:
+        conversation.append({"role": "assistant", "content": "<think>\n\n</think>\n\n" + (options[target] if target is not None else "")})
+    elif target is not None:
+        conversation.append({"role": "assistant", "content": options[target]})
+    return conversation
 
-def make_n_shot_prompt(contexts: list[str], questions: list[str], options: list[tuple[str, ...]], targets: list[int], n_shots) -> str:
-    return "\n\n\n".join([
-        process_one_sample(c, q, o, t) for 
-        c, q, o, t in zip(contexts[:n_shots], 
-                          questions[:n_shots], 
-                          options[:n_shots], 
-                          targets[:n_shots])]) + "\n\n\n"
+def make_n_shot_prompt(contexts: list[str], questions: list[str], options: list[tuple[str, ...]], targets: list[int], n_shots, is_base, is_thinking) -> str:
+    if is_base:
+        return "\n\n\n".join([
+            process_one_sample(c, q, o, t, is_base=is_base, is_thinking=is_thinking) for 
+            c, q, o, t in zip(contexts[:n_shots], 
+                            questions[:n_shots], 
+                            options[:n_shots], 
+                            targets[:n_shots])]) + "\n\n\n"
+    conversation = [{"role": "system", "content": ""}]
+    for c, q, o, t in zip(contexts[:n_shots], 
+                            questions[:n_shots], 
+                            options[:n_shots], 
+                            targets[:n_shots]):
+        conversation += process_one_sample(c, q, o, t, is_base=is_base, is_thinking=is_thinking)
+    return conversation
 
 def get_min_tokens_to_generate(answers: tuple[str, ...], tokenizer: AutoTokenizer):
     tokenized_answers: torch.Tensor = tokenizer(answers, add_special_tokens=False, return_tensors="pt", padding="longest").input_ids
@@ -56,14 +74,22 @@ def get_min_tokens_to_generate(answers: tuple[str, ...], tokenizer: AutoTokenize
         if tokenized_answers[:, :kp].unique(dim=0).shape[0] == n:
             min_tokens = kp + 1
             break
+    if min_tokens == 0:
+        raise ValueError(f"Could not find a prefix length that makes the answers unique: {answers}")
     return min_tokens
 
-def main(model_id, langs, n_shots = 2):
-    cahce_dir = tempfile.mkdtemp()
-    os.environ["VLLM_CACHE_ROOT"] = cahce_dir
-    model = LLM(model_id, max_model_len=10000, dtype="bfloat16")
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    tokenizer.pad_token = tokenizer.eos_token
+def main(model_id, langs, n_shots = 3):
+    is_base = "base" in model_id.lower() or "pt" in model_id.lower()
+    is_thinking = model_id in ["Qwen/Qwen3-14B"]
+    cache_dir = tempfile.mkdtemp()
+    os.environ["VLLM_CACHE_ROOT"] = cache_dir
+    model = LLM(model_id, max_model_len=15000, dtype="bfloat16")
+    if is_base:
+        tokenizer = model.get_tokenizer()
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = tokenizer.eos_token_id
 
     acc_dict = {}
 
@@ -81,17 +107,28 @@ def main(model_id, langs, n_shots = 2):
         belebele = belebele.cast_column("correct_answer_num", Value(dtype="int32"))
         targets = torch.tensor(belebele["correct_answer_num"]) - 1
 
-        few_shot_prefix = make_n_shot_prompt(contexts, questions, options, targets, n_shots)
+        few_shot_prefix = make_n_shot_prompt(contexts, questions, options, targets, n_shots, is_base, is_thinking)
 
-        prompts = [few_shot_prefix + process_one_sample(c, q, o) for c, q, o in zip(contexts[n_shots:], questions[n_shots:], options[n_shots:])]
+        prompts = [few_shot_prefix + process_one_sample(c, q, o, is_base=is_base, is_thinking=is_thinking) for c, q, o in zip(contexts[n_shots:], questions[n_shots:], options[n_shots:])]
 
-        sampling_params = [SamplingParams(temperature=0.0, max_tokens=get_min_tokens_to_generate(options_set, tokenizer)) for options_set in options[n_shots:]]
-
-        generated = model.generate(prompts, sampling_params=sampling_params)
+        if is_base:
+            sampling_params = [SamplingParams(temperature=0.0, max_tokens=get_min_tokens_to_generate(options_set, tokenizer), stop_token_ids=[tokenizer.eos_token_id], structured_outputs=StructuredOutputsParams(choice=options_set)) for options_set in options[n_shots:]]
+        else:
+            sampling_params = [SamplingParams(temperature=0.0, max_tokens=get_min_tokens_to_generate(options_set, tokenizer), stop_token_ids=[tokenizer.eos_token_id], structured_outputs=StructuredOutputsParams(choice=options_set)) for options_set in options[n_shots:]]
+        if not is_base:
+            if is_thinking:
+                prompts = tokenizer.apply_chat_template(prompts, tokenize=True, add_generation_prompt=False, continue_final_message=True).input_ids
+            else:
+                prompts = tokenizer.apply_chat_template(prompts, tokenize=True, add_generation_prompt=True).input_ids
+                # decoded = tokenizer.batch_decode(prompts) # for debugging
+                # print(decoded)
+                # print([len(p) for p in prompts])
+        
+        generated = model.generate(prompts, sampling_params=sampling_params, use_tqdm=False)
 
         correct = 0
         for answer, options, target in zip(generated, options[n_shots:], targets[n_shots:]):
-            if answer.outputs[0].finish_reason == "length" and options[target].startswith(answer.outputs[0].text.strip()):
+            if (answer.outputs[0].finish_reason == "length" and options[target].startswith(answer.outputs[0].text.strip())) or answer.outputs[0].text.strip() == options[target]:
                 correct += 1
         
         acc_dict[lang] = correct / len(targets[n_shots:])
@@ -101,11 +138,12 @@ def main(model_id, langs, n_shots = 2):
     with open(f"scores/belebele/{model_id.split('/')[1]}_acc.json", "w") as f:
         json.dump(acc_dict, f, indent=True)
     
-    shutil.rmtree(cahce_dir)
+    shutil.rmtree(cache_dir)
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model,
              snakemake.params.langs)
     else:

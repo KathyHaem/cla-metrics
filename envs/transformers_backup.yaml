@@ -10,7 +10,7 @@ dependencies:
   - defaults::libstdcxx-ng==15.2.0
   - pip==25.2
   - pip:
-    - snakemake==9.15.0
+    - snakemake==9.20.0
     - langcodes==3.5.0
     - torch==2.9.1
     - transformers==4.57.1

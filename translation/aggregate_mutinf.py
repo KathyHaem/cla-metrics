@@ -20,7 +20,8 @@ def main(model: str, langs: list[str]):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model, 
              snakemake.params.langs)
     

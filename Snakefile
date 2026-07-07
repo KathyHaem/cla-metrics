@@ -3,18 +3,37 @@
 # Run with snakemake==9.3.0 snakemake-executor-plugin-slurm==0.14.2
 
 from constants import ALL_LANGUAGES
+import hashlib
 
 CPU_PARTITION="cpu-troja"
 GPU_PARTITION="gpu-troja,gpu-ms"
 GPU_CONSTRAINT="gpuram40G|gpuram48G"
+GPU_CONSTRAINT_A100="gpuram40G"
 
 def gres_gpu(num):
     return f"--gres 'gpu:{num}'"
 
+def select_24_or_40G(wildcards, base_num_gpus=2):
+    key = "_".join(str(v) for v in wildcards.__dict__.values() if isinstance(v, str) or isinstance(v, int))
+    h = int(hashlib.md5(key.encode()).hexdigest(), 16)
+    if h%2 == 0:
+        return {
+            "constraint": "gpuram40G",
+            "num_gpus": base_num_gpus
+        }
+    else:
+        return {
+            "constraint": "gpuram24G",
+            "num_gpus": base_num_gpus*2
+        }
+
 FULL_MODELS = [
+    "Qwen/Qwen3-14B-Base",
     "Qwen/Qwen3-14B",
     "mistralai/Ministral-3-14B-Base-2512",
-    "google/gemma-3-12b-pt"
+    "mistralai/Ministral-3-14B-Instruct-2512",
+    "google/gemma-3-12b-pt",
+    "google/gemma-3-12b-it"
 ]
 
 def short_name(model_id: str) -> str:
@@ -26,24 +45,28 @@ SCORES = ["cosine", "anc", "dist", "ratio", "nn-abs"]
 
 SENT_REPS = ["mean", "weighted-mean", "prompt", "last-token", "fewshot"]
 
+TRANSLATION_DATASETS = ["flores", "bouquet"]
+
 rule all:
     input:
         expand("scores/flores/{short}_{sent_rep}_{score}.json",
                short=MODELS.keys(),
                sent_rep=SENT_REPS,
                score=SCORES),
-        expand("scores/translation_chrf/{short}.json",
-               short=MODELS.keys()),
-        expand("scores/translation_mutinf/{short}.json",
-               short=MODELS.keys()),
+        expand("scores/translation_{dataset}_chrf/{short}.json",
+               short=MODELS.keys(),
+               dataset=TRANSLATION_DATASETS),
+        expand("scores/translation_{dataset}_mutinf/{short}.json",
+               short=MODELS.keys(),
+               dataset=TRANSLATION_DATASETS),
         expand("scores/dali_belebele/{short}.json",
                short=MODELS.keys()),
         expand("scores/belebele/{short}_acc.json",
                short=MODELS.keys()),
         expand("scores/sib-200/{short}.json",
                short=MODELS.keys()),
-        expand("scores/eflomal/{model}.json",
-               model=MODELS.keys())
+        # expand("scores/eflomal/{model}.json",
+        #        model=MODELS.keys())
 
 rule belebele:
     output:
@@ -52,7 +75,8 @@ rule belebele:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
         constraint=GPU_CONSTRAINT,
-        slurm_extra=gres_gpu(2)
+        gpu=2,
+        gpu_use=2
     params:
         model=lambda wildcards: MODELS[wildcards.short],
         langs=ALL_LANGUAGES
@@ -68,7 +92,8 @@ rule sib_200:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
         constraint=GPU_CONSTRAINT,
-        slurm_extra=gres_gpu(1)
+        gpu=1,
+        gpu_use=1
     params:
         model=lambda wildcards: MODELS[wildcards.short],
         langs=ALL_LANGUAGES
@@ -101,7 +126,8 @@ rule translations_comet:
         slurm_partition=GPU_PARTITION,
         mem_mb=40000,
         constraint=GPU_CONSTRAINT,
-        slurm_extra=gres_gpu(1)
+        gpu=1,
+        gpu_use=1
     params:
         model=lambda wildcards: MODELS[wildcards.short],
         src_lang=lambda wildcards: wildcards.lang,
@@ -111,19 +137,34 @@ rule translations_comet:
     script:
         "comet/calc_comet.py"
 
+rule cache_translation_datasets:
+    output:
+        "translation/dataset_{dataset}_cached.ok"
+    resources:
+        slurm_partition=CPU_PARTITION,
+        mem_mb=1000
+    params:
+        langs=ALL_LANGUAGES,
+        dataset=lambda wildcards: wildcards.dataset
+    conda:
+        "envs/transformers.yaml"
+    script:
+        "translation/cache_datasets.py"
+
 rule translations_chrf:
     input:
-        expand("translation/translations/{{short}}_{lang}.json", lang=ALL_LANGUAGES)
+        expand("translation/translations_{{dataset}}/{{short}}_{lang}.json", lang=ALL_LANGUAGES)
     resources:
         slurm_partition=CPU_PARTITION,
         mem_mb=8000,
         cpus_per_task=45,
         tasks=1
     output:
-        "scores/translation_chrf/{short}.json"
+        "scores/translation_{dataset}_chrf/{short}.json"
     params:
         model=lambda wildcards: MODELS[wildcards.short],
-        langs=ALL_LANGUAGES
+        langs=ALL_LANGUAGES,
+        dataset=lambda wildcards: wildcards.dataset
     priority:
         10
     conda:
@@ -132,17 +173,22 @@ rule translations_chrf:
         "translation/evaluate.py"
 
 rule translations_vllm:
+    input:
+        "translation/dataset_{dataset}_cached.ok"
     output:
-        "translation/translations/{short}_{lang}.json"
+        "translation/translations_{dataset}/{short}_{lang}.json"
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=16000,
         constraint=GPU_CONSTRAINT,
-        slurm_extra=gres_gpu(2)
+        gpu=2,
+        gpu_use=2
     params:
         model=lambda wildcards: MODELS[wildcards.short],
         src_lang=lambda wildcards: wildcards.lang,
-        langs=ALL_LANGUAGES
+        langs=ALL_LANGUAGES,
+        dataset=lambda wildcards: wildcards.dataset,
+        n_shots=5
     conda:
         "envs/vllm.yaml"
     script:
@@ -150,33 +196,41 @@ rule translations_vllm:
 
 rule translations_mutinf_agregate:
     input:
-        expand("translation/translation_mutinf/{{short}}-{lang}.json", lang = ALL_LANGUAGES)
+        expand("translation/translation_{{dataset}}_mutinf/{{short}}-{lang}.json", lang = ALL_LANGUAGES)
     output:
-        "scores/translation_mutinf/{short}.json"
+        "scores/translation_{dataset}_mutinf/{short}.json"
     resources:
         slurm_partition=CPU_PARTITION,
         mem_mb=2000
     params:
         model=lambda wildcards: MODELS[wildcards.short],
-        langs=ALL_LANGUAGES
+        langs=ALL_LANGUAGES,
+        dataset=lambda wildcards: wildcards.dataset
     priority:
         10
     script:
         "translation/aggregate_mutinf.py"
 
 rule translations_mutinf:
+    input:
+        "translation/dataset_{dataset}_cached.ok"
     output:
-        "translation/translation_mutinf/{short}-{lang}.json"
+        "translation/translation_{dataset}_mutinf/{short}-{lang}.json"
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=16000,
-        constraint=GPU_CONSTRAINT,
-        slurm_extra=gres_gpu(2)
+        constraint=lambda wildcards: select_24_or_40G(wildcards)["constraint"], #GPU_CONSTRAINT_A100
+        gpu=lambda wildcards: select_24_or_40G(wildcards)["num_gpus"], #2
+        gpu_use=lambda wildcards: select_24_or_40G(wildcards)["num_gpus"] #2
     params:
         model=lambda wildcards: MODELS[wildcards.short],
         src_lang=lambda wildcards: wildcards.lang,
         langs=ALL_LANGUAGES,
-        batch_size=10
+        batch_size=10,
+        dataset=lambda wildcards: wildcards.dataset,
+        n_shots=5
+    priority:
+        -1
     conda:
         "envs/transformers.yaml"
     script:
@@ -192,7 +246,8 @@ rule calc_scores_dali:
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=16000,
-        slurm_extra=gres_gpu(1),
+        gpu=1,
+        gpu_use=1,
         constraint=GPU_CONSTRAINT
     conda:
         "envs/transformers.yaml"
@@ -209,7 +264,8 @@ rule save_embeds_dali:
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
-        slurm_extra=gres_gpu(2),
+        gpu=2,
+        gpu_use=2,
         constraint=GPU_CONSTRAINT
     conda:
         "envs/transformers.yaml"
@@ -225,9 +281,12 @@ rule calc_scores:
         slurm_partition=lambda wildcards: CPU_PARTITION if wildcards.score in ["dist", "ratio", "nn-abs"] else GPU_PARTITION,
         mem_mb=16000,
         constraint=lambda wildcards: "" if wildcards.score in ["dist", "ratio", "nn-abs"] else GPU_CONSTRAINT,
-        slurm_extra=lambda wildcards: "" if wildcards.score in ["dist", "ratio", "nn-abs"] else gres_gpu(1),
+        gpu=lambda wildcards: 0 if wildcards.score in ["dist", "ratio", "nn-abs"] else 1,
+        gpu_use=lambda wildcards: 0 if wildcards.score in ["dist", "ratio", "nn-abs"] else 1,
         tasks=1,
         cpus_per_task=lambda wildcards: 10 if wildcards.score in ["dist", "ratio", "nn-abs"] else 2
+    priority:
+        1
     threads:
         10
     params:
@@ -257,7 +316,8 @@ rule save_embeds:
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=20000,
-        slurm_extra=lambda wildcards: gres_gpu(2) if wildcards.sent_rep=="fewshot" else gres_gpu(2),
+        gpu=2,
+        gpu_use=2,
         constraint=GPU_CONSTRAINT
     conda:
         "envs/transformers.yaml"

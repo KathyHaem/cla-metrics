@@ -21,7 +21,8 @@ def main(languages: list[str] = ALL_LANGUAGES):
 
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.languages)
     else:
         parser = argparse.ArgumentParser(description="Generate a LaTeX table comparing the average translation performance (chrF) for different target languages. Values are averaged over all source languages.")

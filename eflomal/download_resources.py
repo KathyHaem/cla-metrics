@@ -22,7 +22,8 @@ def main(model_id: str, resource: str):
                             revision="refs/convert/parquet", local_dir=dir_name_flores), file=sys.stderr)
 if __name__ == "__main__":
     if "snakemake" in globals():
-        from snakemake.script import snakemake
+        from snakemake.script import Snakemake
+        snakemake: Snakemake
         main(snakemake.params.model, snakemake.params.resource)
     else:
         parser = argparse.ArgumentParser()
