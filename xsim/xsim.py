@@ -31,32 +31,15 @@ class Margin(Enum):
         return value in cls._value2member_map_
 
 
-def get_xsim_correct_rate(
-        x: tp.Union[str, np.ndarray],
-        y: tp.Union[str, np.ndarray],
-        margin: str = Margin.RATIO.value,
-        k: int = 4,
-        dim: int = 1024,
-        fp16: bool = False,
-        eval_text: str = None,
-        augmented_json: str = None,
-) -> float:
-    err, nbex, _ = x_sim(x, y, margin, k, dim, fp16, eval_text, augmented_json)
-    if nbex == 0:
-        raise ValueError("No examples to calculate precision.")
-    correct = nbex - err
-    return int(correct) / int(nbex)
-
-
-def x_sim(
-        x: tp.Union[str, np.ndarray],
-        y: tp.Union[str, np.ndarray],
-        margin: str = Margin.RATIO.value,
-        k: int = 4,
-        dim: int = 1024,
-        fp16: bool = False,
-        eval_text: str = None,
-        augmented_json: str = None,
+def xSIM(
+    x: tp.Union[str, np.ndarray],
+    y: tp.Union[str, np.ndarray],
+    margin: str = Margin.RATIO.value,
+    k: int = 4,
+    dim: int = 1024,
+    fp16: bool = False,
+    eval_text: str = None,
+    augmented_json: str = None,
 ) -> tp.Tuple[int, int, tp.Dict[str, int]]:
     assert Margin.has_value(margin), f"Margin type: {margin}, is not supported."
     if not isinstance(x, np.ndarray):
@@ -78,12 +61,12 @@ def _load_embeddings(infile: str, dim: int, fp16: bool = False) -> np.ndarray:
 
 
 def score_margin(
-        Dxy: np.ndarray,
-        Ixy: np.ndarray,
-        Ax: np.ndarray,
-        Ay: np.ndarray,
-        margin: str,
-        k: int,
+    Dxy: np.ndarray,
+    Ixy: np.ndarray,
+    Ax: np.ndarray,
+    Ay: np.ndarray,
+    margin: str,
+    k: int,
 ) -> np.ndarray:
     nbex = Dxy.shape[0]
     scores = np.zeros((nbex, k))
@@ -132,30 +115,30 @@ def _score_knn(x: np.ndarray, y: np.ndarray, k: int, margin: str) -> np.ndarray:
 
 def get_transform(augmented_json, closest_neighbor, src):
     if (
-            closest_neighbor in augmented_json
-            and augmented_json[closest_neighbor]["src"] == src
+        closest_neighbor in augmented_json
+        and augmented_json[closest_neighbor]["src"] == src
     ):
         return augmented_json[closest_neighbor]["errtype"]
     return "Misaligned"
 
 
 def calculate_error(
-        x: np.ndarray,
-        y: np.ndarray,
-        margin: str = None,
-        k: int = 4,
-        eval_text: str = None,
-        augmented_json: str = None,
+    x: np.ndarray,
+    y: np.ndarray,
+    margin: str = None,
+    k: int = 4,
+    eval_text: str = None,
+    augmented_json: str = None,
 ) -> tp.Tuple[int, int, tp.Dict[str, int]]:
     if augmented_json:
         with open(augmented_json) as f:
             augmented_json = json.load(f)
         assert (
-                x.shape[0] < y.shape[0]
+            x.shape[0] < y.shape[0]
         ), f"Shape mismatch: {x.shape[0]} >= target {y.shape[0]}"
     else:
         assert (
-                x.shape == y.shape
+            x.shape == y.shape
         ), f"number of source {x.shape} / target {y.shape} shapes mismatch, "
     nbex = x.shape[0]
     augmented_report = {}
@@ -179,4 +162,4 @@ def calculate_error(
     else:  # calc index error
         ref = np.linspace(0, nbex - 1, nbex).astype(int)  # [0, nbex)
         err = nbex - np.equal(closest_neighbor.reshape(nbex), ref).astype(int).sum()
-    return err.item(), nbex, augmented_report
+    return err, nbex, augmented_report

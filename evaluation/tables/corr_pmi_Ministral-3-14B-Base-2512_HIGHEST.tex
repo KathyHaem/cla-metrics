@@ -1,0 +1,18 @@
+\setlength{\tabcolsep}{4.5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}%
+    {p{4em} | C  C  C  C  C  C | C}
+        \toprule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{57.9}{0} & \percentGrad{74.9}{0} & \percentGrad{81.9}{0} & \percentGrad{81.9}{0} & \percentGrad{81.9}{0} & -- & \percentGrad{65.0}{2} \\
+        \textbf{last} & \percentGrad{80.7}{0} & \percentGrad{80.9}{0} & \percentGrad{83.3}{0} & \percentGrad{83.3}{0} & \percentGrad{83.3}{0} & \percentGrad{75.4}{0} & \percentGrad{65.0}{2} \\
+        \textbf{p-wm} & \percentGrad{75.1}{0} & \percentGrad{79.7}{0} & \percentGrad{85.6}{1} & \percentGrad{85.6}{1} & \percentGrad{85.7}{1} & -- & \percentGrad{65.0}{0} \\
+        \textbf{mean} & \percentGrad{57.8}{0} & \percentGrad{79.3}{0} & \percentGrad{84.1}{0} & \percentGrad{84.1}{0} & \percentGrad{84.1}{0} & -- & \percentGrad{65.0}{2} \\
+        \textbf{prompt} & -- & \percentGrad{75.2}{0} & \percentGrad{66.9}{0} & \percentGrad{66.9}{0} & \percentGrad{66.9}{0} & -- & \percentGrad{65.0}{2} \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Correlation between the best convex combination of alignments \texttt{src-en}, \texttt{en-tgt} and \texttt{src-tgt} and the PMI of translations for Ministral-3-14B-Base-2512.}
+    \label{tab:corr-pmi-Ministral-3-14B-Base-2512_HIGHEST}
+\end{table}

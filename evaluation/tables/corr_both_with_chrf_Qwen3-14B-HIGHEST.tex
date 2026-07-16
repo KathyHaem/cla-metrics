@@ -1,0 +1,18 @@
+\setlength{\tabcolsep}{4.5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}%
+{X | c  c  c  c  c  c | c}
+        \toprule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{38}{0}\hspace{0.6em}/23 & \percentGrad{55}{0}\hspace{0.6em}/62 & \percentGrad{81}{0}\hspace{0.6em}/62 & \percentGrad{81}{0}\hspace{0.6em}/62 & \percentGrad{81}{0}\hspace{0.6em}/62 & --/-- & \percentGrad{49}{2} \\
+        \textbf{last} & \percentGrad{34}{0}\hspace{0.6em}/20 & \percentGrad{54}{0}\hspace{0.6em}/56 & \percentGrad{76}{0}\hspace{0.6em}/57 & \percentGrad{76}{0}\hspace{0.6em}/57 & \percentGrad{76}{0}\hspace{0.6em}/57 & \percentGrad{73}{0}\hspace{0.6em}/71 & \percentGrad{49}{2} \\
+        \textbf{p-wm} & \percentGrad{67}{0}\hspace{0.6em}/43 & \percentGrad{83}{0}\hspace{0.6em}/\textbf{74} & \percentGrad{81}{0}\hspace{0.6em}/70 & \percentGrad{81}{0}\hspace{0.6em}/70 & \percentGrad{81}{0}\hspace{0.6em}/70 & --/-- & \percentGrad{49}{0}\hspace{0.6em}/17 \\
+        \textbf{mean} & \percentGrad{48}{0}\hspace{0.6em}/34 & \percentGrad{84}{0}\hspace{0.6em}/73 & \percentGrad{80}{0}\hspace{0.6em}/39 & \percentGrad{80}{0}\hspace{0.6em}/39 & \percentGrad{80}{0}\hspace{0.6em}/38 & --/-- & \percentGrad{49}{2} \\
+        \textbf{prompt} & --/-- & \percentGrad{86}{1}\hspace{0.6em}/\textbf{74} & \percentGrad{78}{0}\hspace{0.6em}/73 & \percentGrad{78}{0}\hspace{0.6em}/73 & \percentGrad{78}{0}\hspace{0.6em}/73 & --/-- & \percentGrad{49}{2} \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Pearson correlation measured first across the \texttt{src} languages with a fixed \texttt{tgt} language and then averaged over the target language. The correlation is measured between the \texttt{en-tgt} (left side of the '/' symbol) or \texttt{src-tgt} (right side of the '/' symbol) alignment score and the \textsc{chrF} score in the \texttt{tgt} language for Qwen3-14B. Values are displayed as per cent. Cell colours are based on the \texttt{en-tgt} scores.}
+    \label{tab:corr-both-with-chrf-Qwen3-14B-HIGHEST}
+\end{table}

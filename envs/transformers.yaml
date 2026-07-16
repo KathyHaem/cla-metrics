@@ -1,0 +1,30 @@
+name: cla-transformers
+channels:
+  # conda config --set channel_priority flexible
+  # the environment has to be created with an active gpu
+  - conda-forge
+  - nvidia
+  - defaults
+dependencies:
+  - python==3.11
+  - gcc_linux-64
+  - gxx_linux-64
+  - cuda-nvcc
+  - cuda-toolkit
+  - pytorch-gpu
+  - flash-attn-layer-norm==2.7.2
+  - pip<=25.2
+  - pip:
+    - packaging
+    - psutil
+    - ninja
+    - snakemake==9.20.0
+    - langcodes==3.5.0
+    - transformers==5.12.1
+    - mistral-common==1.10.0
+    - datasets==4.3.0
+    - accelerate==1.11.0
+    - numpy==2.2.6
+    - scipy==1.17.0
+    - faiss-cpu==1.13.0
+    - kernels==0.12.0

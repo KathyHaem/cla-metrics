@@ -1,0 +1,19 @@
+\newcommand{\translationperformancebylanguageshortGrad}[2]{\gradientcell{#1}{3.9716932424628495}{61.388778206153084}{cyan}{yellow}{70}{#2}}
+\setlength{\tabcolsep}{4.5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}%
+    {p{4em} | C  C  C}
+        \toprule
+         & \textbf{Qwen3} & \textbf{gemma-3} & \textbf{Ministral-3} \\
+        \midrule
+        \textbf{en} & \translationperformancebylanguageshortGrad{58.4}{0} & \translationperformancebylanguageshortGrad{61.4}{1} & \translationperformancebylanguageshortGrad{58.2}{0} \\
+        \textbf{it} & \translationperformancebylanguageshortGrad{44.6}{0} & \translationperformancebylanguageshortGrad{48.5}{1} & \translationperformancebylanguageshortGrad{43.0}{0} \\
+        \textbf{zh} & \translationperformancebylanguageshortGrad{18.4}{0} & \translationperformancebylanguageshortGrad{21.3}{1} & \translationperformancebylanguageshortGrad{19.9}{0} \\
+        \textbf{ar} & \translationperformancebylanguageshortGrad{38.4}{0} & \translationperformancebylanguageshortGrad{44.1}{1} & \translationperformancebylanguageshortGrad{39.6}{0} \\
+        \textbf{am} & \translationperformancebylanguageshortGrad{7.6}{0} & \translationperformancebylanguageshortGrad{22.4}{1} & \translationperformancebylanguageshortGrad{4.0}{0} \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Average translation performance (\textsc{chrF}) (over all source languages) for the displayed target languages. Values are displayed as per cent.}
+    \label{tab:translation-performance-by-language-short}
+\end{table}

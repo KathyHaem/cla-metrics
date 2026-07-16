@@ -51,16 +51,16 @@ def plot_only_mean(scores):
     return fig
 
 
-def main(model, dataset, show_pairs, score):
-    with open(f"../scores/{dataset}/{model}_mean_{score}.json", "r") as fin:
+def main(model, dataset, show_pairs, score, sent_rep):
+    with open(f"../scores/{dataset}/{model}_{sent_rep}_{score}.json", "r") as fin:
         scores = json.load(fin)
 
     if show_pairs:
         fig = plot_show_pairs(scores)
-        plot_name = f"../figures/{dataset}/{model}_{score}_show_pairs"
+        plot_name = f"../figures/{dataset}/{model}_{sent_rep}_{score}_show_pairs"
     else:
         fig = plot_only_mean(scores)
-        plot_name = f"../figures/{dataset}/{model}_{score}"
+        plot_name = f"../figures/{dataset}/{model}_{sent_rep}_{score}"
 
     save_plot(plot_name, fig)
 
@@ -69,9 +69,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot score per layer")
     parser.add_argument("--model", type=str, required=True, help="Model name. Assuming an HF decoder")
     parser.add_argument("--dataset", type=str, default="flores")
-    parser.add_argument("--score", type=str, default="cosine")  # anc, dist, ratio,...
+    parser.add_argument("--score", type=str, default="dist")  # anc, dist, ratio,...
     parser.add_argument("--show_pairs", action="store_true", help="Differentiate by language pairs."
                                                                   "Default: Just Mean")
-
+    parser.add_argument("--sent-rep", type=str, default="fewshot", help="How to sentence rep",
+                        choices=["mean", "prompt", "fewshot"])
     args = parser.parse_args()
-    main(args.model, args.dataset, args.show_pairs, args.score)
+    main(args.model, args.dataset, args.show_pairs, args.score, args.sent_rep)

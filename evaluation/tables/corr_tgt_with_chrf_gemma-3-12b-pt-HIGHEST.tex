@@ -1,0 +1,18 @@
+\setlength{\tabcolsep}{4.5pt}
+\begin{table}[ht]
+    \centering\footnotesize
+    \begin{tabularx}{\columnwidth}%
+    {p{4em} | C  C  C  C  C  C | C}
+        \toprule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{26.1}{0} & \percentGrad{43.6}{0} & \percentGrad{22.6}{0} & \percentGrad{22.6}{0} & \percentGrad{22.6}{0} & -- & \percentGrad{49.7}{2} \\
+        \textbf{last} & \percentGrad{11.1}{0} & \percentGrad{49.3}{0} & \percentGrad{58.1}{0} & \percentGrad{58.1}{0} & \percentGrad{58.2}{0} & \percentGrad{49.5}{0} & \percentGrad{49.7}{2} \\
+        \textbf{p-wm} & \percentGrad{52.9}{0} & \percentGrad{71.9}{1} & \percentGrad{53.2}{0} & \percentGrad{53.2}{0} & \percentGrad{53.2}{0} & -- & \percentGrad{49.7}{0} \\
+        \textbf{mean} & \percentGrad{14.0}{0} & \percentGrad{70.0}{0} & \percentGrad{48.4}{0} & \percentGrad{48.4}{0} & \percentGrad{48.3}{0} & -- & \percentGrad{49.7}{2} \\
+        \textbf{prompt} & -- & \percentGrad{66.0}{0} & \percentGrad{56.2}{0} & \percentGrad{56.2}{0} & \percentGrad{56.0}{0} & -- & \percentGrad{49.7}{2} \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Pearson correlation measured first across the \texttt{src} languages with a fixed \texttt{tgt} language and then averaged over the target language. The correlation is measured between the \texttt{tgt-tgt} alignment score and the \textsc{chrF} score in the \texttt{tgt} language for gemma-3-12b-pt. Values are displayed as per cent.}
+    \label{tab:corr-tgt-with-chrf-gemma-3-12b-pt-HIGHEST}
+\end{table}

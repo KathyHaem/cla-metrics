@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from scipy.stats import pearsonr
 
-
+@torch.no_grad()
 def anc_score(a: np.ndarray, b: np.ndarray):
     """ My best understanding of Del & Fishel (AACL 2022), based on their code and paper.
     I will say some of it is confusing as hell because of mismatches between said code and paper.
@@ -27,14 +27,12 @@ def anc_score(a: np.ndarray, b: np.ndarray):
 
     # from their repo here:
     # https://github.com/TartuNLP/xsim/blob/c8a25a5096b9a183ddc6cfb0f36a118d6d7962f0/examples/util.py#L291
-    # a, b = torch.Tensor(a), torch.Tensor(b)
-    # a, b = a.cuda(), b.cuda()
+    a, b = torch.tensor(a, device="cuda"), torch.tensor(b, device="cuda")
+
     # center
-    a -= a.mean(axis=1, keepdims=True)
-    b -= b.mean(axis=1, keepdims=True)
-    # they have cosine in their repo but the paper says it should be pearson correlation
-    # score = F.cosine_similarity(a, b, dim=0)
-    score = pearsonr(a, b, axis=1).statistic
-    # ugh it's confusing with the dims...but I want a result for each example
-    # score = score.cpu().numpy()
-    return np.absolute(score).mean().item()
+    a -= a.mean(axis=0)
+    b -= b.mean(axis=0)
+
+    score = torch.nn.functional.cosine_similarity(a, b, dim=0)
+
+    return score.abs().mean().cpu().item()

@@ -1,3 +1,11 @@
+# Byte-compiled / optimized / DLL files
+*__pycache__/
+*.py[codz]
+*$py.class
+
 .idea/
 data/
-*.pyc
+embeds/
+.vscode
+.snakemake
+.env
