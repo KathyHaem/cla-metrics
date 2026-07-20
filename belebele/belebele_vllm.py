@@ -43,9 +43,11 @@ def process_one_sample(context, question, options, target=None, is_base=False, i
         {"role": "user", "content": f"{context}\n\n{question}\n\n" + "\n".join(options)},
     ]
     if is_thinking:
-        conversation.append({"role": "assistant", "content": "<think>\n\n</think>\n\n" + (options[target] if target is not None else "")})
+        conversation.append({"role": "assistant", "content": "<think>\n\n</think>\n\n" + ("`" + options[target] + "`" if target is not None else "`")})
     elif target is not None:
-        conversation.append({"role": "assistant", "content": options[target]})
+        conversation.append({"role": "assistant", "content": "`" + options[target] + "`"})
+    else:
+        conversation.append({"role": "assistant", "content": "`"})
     return conversation
 
 def make_n_shot_prompt(contexts: list[str], questions: list[str], options: list[tuple[str, ...]], targets: list[int], n_shots, is_base, is_thinking) -> str:
@@ -65,7 +67,11 @@ def make_n_shot_prompt(contexts: list[str], questions: list[str], options: list[
     return conversation
 
 def get_min_tokens_to_generate(answers: tuple[str, ...], tokenizer: AutoTokenizer):
-    tokenized_answers: torch.Tensor = tokenizer(answers, add_special_tokens=False, return_tensors="pt", padding="longest").input_ids
+    try:
+        tokenized_answers: torch.Tensor = tokenizer(answers, add_special_tokens=False, return_tensors="pt", padding="longest").input_ids
+    except:
+        tokenized_answers = tokenizer(answers, add_special_tokens=False)
+        tokenized_answers = torch.nn.utils.rnn.pad_sequence([torch.tensor(t) for t in tokenized_answers["input_ids"]], batch_first=True, padding_value=tokenizer.pad_token_id)
     # get the smallest amount of tokens that distinguishes the answers
     n, k = tokenized_answers.shape
     # find the smallest prefix length that makes all rows unique
@@ -83,7 +89,7 @@ def main(model_id, langs, n_shots = 3):
     is_thinking = model_id in ["Qwen/Qwen3-14B"]
     cache_dir = tempfile.mkdtemp()
     os.environ["VLLM_CACHE_ROOT"] = cache_dir
-    model = LLM(model_id, max_model_len=15000, dtype="bfloat16")
+    model = LLM(model_id, max_model_len=15000, dtype="bfloat16", limit_mm_per_prompt={"image": 0})
     if is_base:
         tokenizer = model.get_tokenizer()
     else:
@@ -95,7 +101,7 @@ def main(model_id, langs, n_shots = 3):
 
     for lang in tqdm(langs):
         try:
-            belebele = load_dataset("facebook/belebele", get_flores_code(lang), split="test")
+            belebele = load_dataset("facebook/belebele", get_flores_code(lang), split="test").shuffle(seed=42)
         except ValueError:
             print(f"Language {lang}/{get_flores_code(lang)} not found! Skipping.")
             continue
@@ -112,22 +118,19 @@ def main(model_id, langs, n_shots = 3):
         prompts = [few_shot_prefix + process_one_sample(c, q, o, is_base=is_base, is_thinking=is_thinking) for c, q, o in zip(contexts[n_shots:], questions[n_shots:], options[n_shots:])]
 
         if is_base:
-            sampling_params = [SamplingParams(temperature=0.0, max_tokens=get_min_tokens_to_generate(options_set, tokenizer), stop_token_ids=[tokenizer.eos_token_id], structured_outputs=StructuredOutputsParams(choice=options_set)) for options_set in options[n_shots:]]
+            sampling_params = [SamplingParams(temperature=0.0, max_tokens=get_min_tokens_to_generate(options_set, tokenizer), stop_token_ids=[tokenizer.eos_token_id], stop=["`"]) for options_set in options[n_shots:]]
         else:
-            sampling_params = [SamplingParams(temperature=0.0, max_tokens=get_min_tokens_to_generate(options_set, tokenizer), stop_token_ids=[tokenizer.eos_token_id], structured_outputs=StructuredOutputsParams(choice=options_set)) for options_set in options[n_shots:]]
+            sampling_params = [SamplingParams(temperature=0.0, max_tokens=get_min_tokens_to_generate(options_set, tokenizer), stop_token_ids=[tokenizer.eos_token_id], stop=["`"]) for options_set in options[n_shots:]]
         if not is_base:
-            if is_thinking:
-                prompts = tokenizer.apply_chat_template(prompts, tokenize=True, add_generation_prompt=False, continue_final_message=True).input_ids
-            else:
-                prompts = tokenizer.apply_chat_template(prompts, tokenize=True, add_generation_prompt=True).input_ids
-                # decoded = tokenizer.batch_decode(prompts) # for debugging
-                # print(decoded)
-                # print([len(p) for p in prompts])
+            prompts = tokenizer.apply_chat_template(prompts, tokenize=True, add_generation_prompt=False, continue_final_message=True).input_ids
         
         generated = model.generate(prompts, sampling_params=sampling_params, use_tqdm=False)
 
         correct = 0
         for answer, options, target in zip(generated, options[n_shots:], targets[n_shots:]):
+            print(f"Answer: {answer.outputs[0].text.strip()}")
+            print(f"Options: {options}")
+            print(f"Target: {options[target]}")
             if (answer.outputs[0].finish_reason == "length" and options[target].startswith(answer.outputs[0].text.strip())) or answer.outputs[0].text.strip() == options[target]:
                 correct += 1
         

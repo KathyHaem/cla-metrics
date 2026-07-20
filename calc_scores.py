@@ -11,7 +11,7 @@ from tqdm import tqdm
 from transformers import AutoConfig
 
 from anc.anc_scoring import anc_score
-from constants import ALL_LANGUAGES
+from constants import ALL_LANGUAGES, MUTUALLY_INTELLIGIBLE
 from xsim.xsim import Margin, calculate_error
 
 
@@ -62,14 +62,15 @@ def calculate_score(src_layer: torch.Tensor, tgt_layer: torch.Tensor, score: str
             raise NotImplementedError()
 
 
-def collect_score(model, dataset, config, score, sent_rep):
+def collect_score(model, dataset, config, score, sent_rep, mutually_intelligible=False):
     scores = defaultdict(list)  # keys are lang pairs, lists are one score per layer
     num_layers = config.num_hidden_layers + 1
-    for src_lang in ALL_LANGUAGES:
+    for src_lang in ALL_LANGUAGES if not mutually_intelligible else MUTUALLY_INTELLIGIBLE:
         print("Processing language", src_lang)
         src_embeds = load_embeds(model, dataset, sent_rep, src_lang)
-
-        for tgt_lang in tqdm(ALL_LANGUAGES):
+        
+        tgt_set = ALL_LANGUAGES if not mutually_intelligible else MUTUALLY_INTELLIGIBLE[src_lang]
+        for tgt_lang in tqdm(tgt_set):
             if src_lang == tgt_lang:
                 continue
             tgt_embeds = load_embeds(model, dataset, sent_rep, tgt_lang)
@@ -83,11 +84,11 @@ def collect_score(model, dataset, config, score, sent_rep):
     return scores
 
 
-def main(model, dataset, sent_rep, requested_scores, overwrite=False):
+def main(model, dataset, sent_rep, requested_scores, mutually_intelligible=False, overwrite=False):
     all_scores = {x: {} for x in requested_scores}
     # actually save scores somewhere
     model_short_name = model.split("/")[-1]
-    out_path = f"scores/{dataset}/"
+    out_path = f"scores/{dataset}/" 
     os.makedirs(out_path, exist_ok=True)
 
     config = AutoConfig.from_pretrained(model)
@@ -95,12 +96,12 @@ def main(model, dataset, sent_rep, requested_scores, overwrite=False):
         config.num_hidden_layers = config.text_config.num_hidden_layers
 
     for score in requested_scores:
-        out_filename = f"{out_path}/{model_short_name}_{sent_rep}_{score}.json"
+        out_filename = f"{out_path}/{model_short_name}_{sent_rep}{'_mutually_intelligible' if mutually_intelligible else ''}_{score}.json"
         if os.path.exists(out_filename) and not overwrite:
             print(f"Already collected {score} scores. Skipping.")
             continue
 
-        scores = collect_score(model, dataset, config, score, sent_rep)
+        scores = collect_score(model, dataset, config, score, sent_rep, mutually_intelligible=mutually_intelligible)
         all_scores[score] = scores
 
         with open(out_filename, "w") as fout:
@@ -115,6 +116,7 @@ if __name__ == "__main__":
              snakemake.params.dataset, 
              snakemake.params.sent_rep, 
              snakemake.params.score, 
+             snakemake.params.mutually_intelligible, 
              snakemake.params.overwrite)
     else:
         parser = argparse.ArgumentParser(description="Calculate simple-ish CLA scores")
@@ -124,7 +126,8 @@ if __name__ == "__main__":
                             choices=["cosine", "anc", "dist", "ratio", "nn-abs"])
         parser.add_argument("--sent-rep", type=str, default="mean", help="How to sentence rep",
                             choices=["mean", "prompt", "fewshot", "last-token", "weighted-mean"])
+        parser.add_argument("--mutually-intelligible", action="store_true", default=False, help="Only consider mutually intelligible language pairs")
         parser.add_argument("--overwrite", action="store_true", default=False)
 
         args = parser.parse_args()
-        main(args.model, args.dataset, args.sent_rep, args.score, args.overwrite)
+        main(args.model, args.dataset, args.sent_rep, args.score, args.mutually_intelligible, args.overwrite)

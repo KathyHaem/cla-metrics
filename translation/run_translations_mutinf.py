@@ -78,7 +78,7 @@ def make_few_shot_prefix(reference_src, reference_tgt, tokenizer, is_base, is_th
         prefix, suffix = chat_applied.split("<SPLIT>")[:2]
         return prefix, suffix
 
-def make_prior_few_shot_prefix(reference_tgt, tokenizer, is_base):
+def make_prior_few_shot_prefix(reference_tgt, tokenizer, is_base, is_thinking):
     newlined = "\n".join([f"{tgt}" for tgt in reference_tgt]) + "\n"
     if is_base:
         return newlined
@@ -88,8 +88,16 @@ def make_prior_few_shot_prefix(reference_tgt, tokenizer, is_base):
             {
                 "role": "user",
                 "content": newlined,
+            },
+            {
+                "role": "assistant",
+                "content": ("<think>\n\n</think>\n\n" if is_thinking else ""),
             }]
-        chat_applied = tokenizer.apply_chat_template(conversation, tokenize=False, add_generation_prompt=False, continue_final_message=True)
+        chat_applied = tokenizer.apply_chat_template(
+            conversation, 
+            tokenize=False, 
+            add_generation_prompt=False, 
+            continue_final_message=True)
         return chat_applied
     
 @torch.no_grad()
@@ -101,12 +109,17 @@ def broadcast_cache(cache: cache_utils.DynamicCache, batch_size: int, device) ->
     return local_cache, torch.ones((batch_size, layer.values.size(2)), device=device)
 
 @torch.no_grad()
-def cache_prefix(model, tokenizer, prompt):
+def cache_prefix(model, tokenizer, prompt, add_bos: bool):
     tokenized = tokenizer([prompt], return_tensors="pt", add_special_tokens=False)
+    if add_bos and tokenizer.bos_token_id is not None:
+        bos = torch.tensor([[tokenizer.bos_token_id]])
+        tokenized["input_ids"] = torch.cat((bos, tokenized.input_ids), dim=1)
+        tokenized["attention_mask"] = torch.cat((torch.ones_like(bos), tokenized.attention_mask), dim=1)
     t_ids = tokenized.input_ids.to(model.device)
     at_mask = tokenized.attention_mask.to(model.device)
     outputs = model(t_ids, attention_mask=at_mask, use_cache=True)
-    return outputs.past_key_values, at_mask
+    # Return the past key values, mask, and the logit of the final token
+    return outputs.past_key_values, at_mask, outputs.logits[:, -1:, :]
 
 @torch.no_grad()
 def loglik_from_logits(logits, mask, target_ids, normalize=True, debug=False):
@@ -114,6 +127,12 @@ def loglik_from_logits(logits, mask, target_ids, normalize=True, debug=False):
     shift_log_probs = log_probs[:, :-1, :]
 
     token_loglik = shift_log_probs.gather(dim=-1, index=target_ids[:, 1:].unsqueeze(-1)).squeeze(-1)
+
+    if debug:
+        # for debug: find the sorted index of the target token in the logits (hoping for 0)
+        better_scoring_tokens = (shift_log_probs > token_loglik.unsqueeze(-1)).sum(dim=-1)
+        better_scoring_tokens[~(mask[:, 1:].bool())] = -1
+
     token_loglik[~(mask[:, 1:].bool())] = 0
     loglik = token_loglik.sum(dim=1)
 
@@ -122,12 +141,14 @@ def loglik_from_logits(logits, mask, target_ids, normalize=True, debug=False):
     return loglik / mask[:, 1:].sum(dim=1)
 
 @torch.no_grad()
-def get_batch_mutinf(sources, 
-                     targets, 
+def get_batch_mutinf(sources: list[str], 
+                     targets: list[str], 
                      tokenizer, 
                      prompt_middlepart, 
-                     model, kv_cache_prior, 
-                     cache_mask_prior, 
+                     model,
+                     kv_cache_prior,
+                     cache_mask_prior,
+                     last_logit_prior: torch.Tensor,
                      kv_cache_posterior, 
                      cache_mask_posterior, 
                      debug=False):
@@ -136,7 +157,12 @@ def get_batch_mutinf(sources,
     tokens_ans = tokenized_ans.input_ids.to(model.device)
     mask_ans = tokenized_ans.attention_mask.to(model.device)
     logits_ans = model(tokens_ans, attention_mask=torch.cat((cache_mask_prior, mask_ans), dim=1), past_key_values = kv_cache_prior).logits
-    ans_prior_loglik = loglik_from_logits(logits_ans, mask_ans, tokens_ans, debug=debug)
+    broadcast_last_logit = last_logit_prior.expand(tokens_ans.size(0), -1, -1)
+    extra_column = torch.zeros((tokens_ans.size(0), 1), device=model.device, dtype=torch.long)
+    ans_prior_loglik = loglik_from_logits(
+        torch.cat((broadcast_last_logit, logits_ans), dim=1), 
+        torch.cat((extra_column, mask_ans), dim=1), 
+        torch.cat((extra_column, tokens_ans), dim=1), debug=debug)
 
     prompt_suffix = [f"{src}{prompt_middlepart}{tgt}" for src, tgt in zip(sources, targets)]
     tokens_suffix = tokenizer(prompt_suffix, add_special_tokens=False, return_tensors="pt", padding="longest")
@@ -152,6 +178,12 @@ def get_batch_mutinf(sources,
     source_mask = (arange.unsqueeze(0) < answer_start_token.unsqueeze(1)).to(att_mask.device)
 
     answers_mask = att_mask * (~source_mask)
+
+    if debug:
+        tok_ids_debug = tok_ids.clone()
+        tok_ids_debug[~answers_mask.bool()] = tokenizer.pad_token_id
+        answers_debug = tokenizer.batch_decode(tok_ids_debug, skip_special_tokens=True)
+        print("Answers debug:", answers_debug)
 
     ans_loglik = loglik_from_logits(logits, answers_mask, tok_ids, debug=debug)
     mutinf = ans_loglik - ans_prior_loglik
@@ -193,11 +225,11 @@ def main(model_id: str, src_lang: str, target_langs: list[str], dataset: str, ba
         assert all(["\n" not in sentence for sentence in sentences])
         targets = get_sentences(dataset, tgt_lang)
 
-        prompt_prefix_prior = make_prior_few_shot_prefix(targets[:n_shots], tokenizer, is_base)
+        prompt_prefix_prior = make_prior_few_shot_prefix(targets[:n_shots], tokenizer, is_base, is_thinking)
         prompt_prefix, prompt_suffix = make_few_shot_prefix(sentences[:n_shots], targets[:n_shots], tokenizer, is_base, is_thinking)
         tokenizer.padding_side = 'left'
-        prefix_cache_prior, _ = cache_prefix(model, tokenizer, prompt_prefix_prior)
-        prefix_cache, _ = cache_prefix(model, tokenizer, prompt_prefix)
+        prefix_cache_prior, _, last_logit_prior = cache_prefix(model, tokenizer, prompt_prefix_prior, add_bos=is_base)
+        prefix_cache, _, _ = cache_prefix(model, tokenizer, prompt_prefix, add_bos=is_base)
         tokenizer.padding_side = 'right'
 
         mutinfs = []
@@ -213,6 +245,7 @@ def main(model_id: str, src_lang: str, target_langs: list[str], dataset: str, ba
                                                 prompt_suffix,
                                                 model,
                                                 *broadcast_cache(prefix_cache_prior, batch_end - batch_start, device=model.device),
+                                                last_logit_prior,
                                                 *broadcast_cache(prefix_cache, batch_end - batch_start, device=model.device),
                                                 debug=debug)
                 mutinfs += batch_mutinf.cpu().tolist()
@@ -226,9 +259,10 @@ def main(model_id: str, src_lang: str, target_langs: list[str], dataset: str, ba
                     single_mutinf, single_seq_len = get_batch_mutinf(sentences[i:i+1], 
                                                 targets[i:i+1],
                                                 tokenizer,
-                                                prompt_suffix[i:i+1],
+                                                prompt_suffix,
                                                 model,
                                                 *broadcast_cache(prefix_cache_prior, 1, device=model.device),
+                                                last_logit_prior,
                                                 *broadcast_cache(prefix_cache, 1, device=model.device),
                                                 debug=debug)
                     mutinfs.append(single_mutinf.cpu().item())

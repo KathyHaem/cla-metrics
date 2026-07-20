@@ -1,0 +1,68 @@
+\begin{table}[ht]
+\centering\footnotesize
+\begin{tabularx}{\columnwidth}%
+{p{4em} | C  C  C  C  C  C | C}\toprule
+\multicolumn{8}{c}{\textbf{Qwen3-14B-Base}} \\
+\midrule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{26.9}{0} & \percentGrad{29.6}{0} & \percentGrad{61.0}{0} & \percentGrad{61.0}{0} & \percentGrad{61.3}{0} & -- & \percentGrad{16.8}{2} \\
+        \textbf{last} & \percentGrad{25.6}{0} & \percentGrad{29.5}{0} & \percentGrad{61.8}{0} & \percentGrad{61.8}{0} & \percentGrad{62.0}{0} & \percentGrad{18.7}{0} & \percentGrad{16.8}{2} \\
+        \textbf{p-wm} & \percentGrad{40.5}{0} & \percentGrad{54.0}{0} & \percentGrad{79.4}{0} & \percentGrad{79.4}{0} & \percentGrad{79.5}{0} & -- & \percentGrad{16.8}{0} \\
+        \textbf{mean} & \percentGrad{21.4}{0} & \percentGrad{54.7}{0} & \percentGrad{64.8}{0} & \percentGrad{64.8}{0} & \percentGrad{64.9}{0} & -- & \percentGrad{16.8}{2} \\
+        \textbf{prompt} & -- & \percentGrad{59.4}{0} & \percentGrad{81.8}{1} & \percentGrad{81.8}{1} & \percentGrad{81.8}{1} & -- & \percentGrad{16.8}{2} \\
+\midrule
+\multicolumn{8}{c}{\textbf{Qwen3-14B}} \\
+\midrule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & -- & \percentGrad{59.7}{0} & \percentGrad{44.1}{0} & \percentGrad{44.1}{0} & \percentGrad{44.1}{0} & -- & \percentGrad{16.6}{2} \\
+        \textbf{last} & \percentGrad{16.1}{0} & \percentGrad{28.2}{0} & \percentGrad{63.8}{0} & \percentGrad{63.8}{0} & \percentGrad{63.7}{0} & \percentGrad{53.5}{0} & \percentGrad{16.6}{2} \\
+        \textbf{p-wm} & \percentGrad{38.4}{0} & \percentGrad{65.5}{0} & \percentGrad{78.5}{0} & \percentGrad{78.5}{0} & \percentGrad{78.5}{0} & -- & \percentGrad{16.6}{0} \\
+        \textbf{mean} & \percentGrad{18.9}{0} & \percentGrad{67.2}{0} & \percentGrad{75.7}{0} & \percentGrad{75.7}{0} & \percentGrad{75.9}{0} & -- & \percentGrad{16.6}{2} \\
+        \textbf{prompt} & -- & \percentGrad{81.6}{0} & \percentGrad{85.9}{1} & \percentGrad{85.9}{1} & \percentGrad{85.9}{1} & -- & \percentGrad{16.6}{2} \\
+\midrule
+\multicolumn{8}{c}{\textbf{gemma-3-12b-pt}} \\
+\midrule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{58.2}{0} & \percentGrad{62.1}{0} & \percentGrad{70.0}{0} & \percentGrad{70.0}{0} & \percentGrad{70.0}{0} & -- & \percentGrad{49.9}{2} \\
+        \textbf{last} & \percentGrad{20.3}{0} & \percentGrad{65.4}{0} & \percentGrad{65.7}{0} & \percentGrad{65.7}{0} & \percentGrad{65.7}{0} & \percentGrad{62.4}{0} & \percentGrad{49.9}{2} \\
+        \textbf{p-wm} & \percentGrad{70.9}{1} & \percentGrad{62.8}{0} & \percentGrad{58.8}{0} & \percentGrad{58.8}{0} & \percentGrad{58.8}{0} & -- & \percentGrad{49.9}{0} \\
+        \textbf{mean} & -- & \percentGrad{61.9}{0} & \percentGrad{62.4}{0} & \percentGrad{62.4}{0} & \percentGrad{62.4}{0} & -- & \percentGrad{49.9}{2} \\
+        \textbf{prompt} & -- & \percentGrad{33.3}{0} & \percentGrad{55.5}{0} & \percentGrad{55.5}{0} & \percentGrad{55.3}{0} & -- & \percentGrad{49.9}{2} \\
+\midrule
+\multicolumn{8}{c}{\textbf{gemma-3-12b-it}} \\
+\midrule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{12.1}{0} & \percentGrad{40.3}{0} & \percentGrad{53.2}{0} & \percentGrad{53.2}{0} & \percentGrad{53.1}{0} & -- & \percentGrad{24.5}{2} \\
+        \textbf{last} & \percentGrad{48.7}{0} & \percentGrad{45.7}{0} & \percentGrad{50.6}{0} & \percentGrad{50.6}{0} & \percentGrad{50.5}{0} & \percentGrad{9.6}{0} & \percentGrad{24.5}{2} \\
+        \textbf{p-wm} & \percentGrad{60.9}{0} & \percentGrad{49.6}{0} & \percentGrad{61.0}{0} & \percentGrad{61.0}{0} & \percentGrad{61.0}{0} & -- & \percentGrad{24.5}{0} \\
+        \textbf{mean} & -- & \percentGrad{49.4}{0} & \percentGrad{67.6}{1} & \percentGrad{67.6}{1} & \percentGrad{67.6}{1} & -- & \percentGrad{24.5}{2} \\
+        \textbf{prompt} & -- & \percentGrad{50.9}{0} & \percentGrad{62.0}{0} & \percentGrad{62.0}{0} & \percentGrad{62.0}{0} & -- & \percentGrad{24.5}{2} \\
+\midrule
+\multicolumn{8}{c}{\textbf{Ministral-3-14B-Base-2512}} \\
+\midrule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & \percentGrad{56.4}{0} & \percentGrad{74.7}{0} & \percentGrad{89.5}{0} & \percentGrad{89.5}{0} & \percentGrad{89.5}{0} & -- & \percentGrad{45.2}{2} \\
+        \textbf{last} & \percentGrad{73.0}{0} & \percentGrad{66.1}{0} & \percentGrad{73.4}{0} & \percentGrad{73.4}{0} & \percentGrad{73.2}{0} & \percentGrad{92.9}{0} & \percentGrad{45.2}{2} \\
+        \textbf{p-wm} & \percentGrad{91.9}{0} & \percentGrad{87.2}{0} & \percentGrad{83.8}{0} & \percentGrad{83.8}{0} & \percentGrad{84.1}{0} & -- & \percentGrad{45.2}{0} \\
+        \textbf{mean} & \percentGrad{69.4}{0} & \percentGrad{87.0}{0} & \percentGrad{80.3}{0} & \percentGrad{80.3}{0} & \percentGrad{80.8}{0} & -- & \percentGrad{45.2}{2} \\
+        \textbf{prompt} & -- & \percentGrad{92.5}{0} & \percentGrad{97.5}{1} & \percentGrad{97.5}{1} & \percentGrad{97.5}{1} & -- & \percentGrad{45.2}{2} \\
+\midrule
+\multicolumn{8}{c}{\textbf{Ministral-3-14B-Instruct-2512}} \\
+\midrule
+         & \textbf{cos} & \textbf{ANC} & \textbf{abs} & \textbf{dist} & \textbf{ratio} & \textbf{Dali} & \textbf{Eflo} \\
+        \midrule
+        \textbf{fewshot} & -- & \percentGrad{86.7}{0} & \percentGrad{95.2}{0} & \percentGrad{95.2}{0} & \percentGrad{95.2}{0} & -- & \percentGrad{36.7}{2} \\
+        \textbf{last} & \percentGrad{70.8}{0} & \percentGrad{64.4}{0} & \percentGrad{92.3}{0} & \percentGrad{92.3}{0} & \percentGrad{92.3}{0} & \percentGrad{88.3}{0} & \percentGrad{36.7}{2} \\
+        \textbf{p-wm} & \percentGrad{89.5}{0} & \percentGrad{84.7}{0} & \percentGrad{80.9}{0} & \percentGrad{80.9}{0} & \percentGrad{80.9}{0} & -- & \percentGrad{36.7}{0} \\
+        \textbf{mean} & \percentGrad{65.4}{0} & \percentGrad{80.3}{0} & \percentGrad{71.7}{0} & \percentGrad{71.7}{0} & \percentGrad{72.3}{0} & -- & \percentGrad{36.7}{2} \\
+        \textbf{prompt} & \percentGrad{9.7}{0} & \percentGrad{87.5}{0} & \percentGrad{97.4}{1} & \percentGrad{97.4}{1} & \percentGrad{97.4}{1} & -- & \percentGrad{36.7}{2} \\
+\bottomrule
+\end{tabularx}
+\caption{Pearson correlation measured across the \texttt{src} languages of \texttt{src-en} alignment score and the \textbf{{SIB-200}} \(F_1\) score in the \texttt{src} language for all models.   Values are displayed as per cent.}
+\label{tab:corr-en-task-sib-200-all-HIGHEST}
+\end{table}

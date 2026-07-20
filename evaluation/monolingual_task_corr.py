@@ -1,4 +1,4 @@
-from cla_utils import ALL_LANGUAGES, METRICS, SENT_REPS, REPS_SHORT_NAMES, METRICS_SHORT_NAMES, get_cla_all, get_alignment, df_to_tex
+from cla_utils import ALL_LANGUAGES, METRICS, SENT_REPS, REPS_SHORT_NAMES, METRICS_SHORT_NAMES, FULL_MODELS, get_cla_all, get_alignment, df_to_tex
 import argparse
 import numpy as np
 import pandas as pd
@@ -8,7 +8,7 @@ import os
 from typing import Literal
 import json
 
-def load_task_scores(model: str, task: Literal["sib-200", "belebele", "translation", "pmi"]) -> dict:
+def load_task_scores(model: str, task: Literal["sib-200", "belebele", "translation", "pmi"], dataset = "flores") -> dict:
     match task:
         case "sib-200":
             with open(os.path.join("scores", "sib-200", f"{model.split('/')[1]}.json")) as f:
@@ -17,18 +17,18 @@ def load_task_scores(model: str, task: Literal["sib-200", "belebele", "translati
             with open(os.path.join("scores", "belebele", f"{model.split('/')[1]}_acc.json")) as f:
                 return json.load(f)
         case "translation":
-            with open(os.path.join("scores", "translation_chrf", f"{model.split('/')[1]}.json")) as f:
+            with open(os.path.join("scores", f"translation_{dataset}_chrf", f"{model.split('/')[1]}.json")) as f:
                 translation_data = json.load(f)
             return {k: v["mean"] for k, v in translation_data.items()}
         case "pmi":
-            with open(os.path.join("scores", "translation_mutinf", f"{model.split('/')[1]}.json")) as f:
+            with open(os.path.join("scores", f"translation_{dataset}_mutinf", f"{model.split('/')[1]}.json")) as f:
                 pmi_data = json.load(f)
             return {k: v["mean"] for k, v in pmi_data.items()}
 
-def main(model: str, 
+def get_monolingual_task_correlations(model: str, 
          tgt_lang: Literal["en", "MEAN"], 
          task: Literal["sib-200", "belebele"] = "sib-200", 
-         layer_pooling: Literal["MEAN", "HIGHEST", "best"] = "MEAN",
+         layer_pooling: Literal["MEAN", "HIGHEST", "best"] = "HIGHEST",
          no_print: bool = False):
     ALL_LANGUAGES_NO_EN = ALL_LANGUAGES.copy()
     ALL_LANGUAGES_NO_EN.remove("en")
@@ -88,14 +88,51 @@ def main(model: str,
                           label=f"corr-{tgt_lang}-task-{task}-{model.split('/')[1]}-{layer_pooling}",
                           grad_command="\\percentGrad", highlight_max=True))
 
+def main(model: str, 
+         tgt_lang: Literal["en", "MEAN"], 
+         task: Literal["sib-200", "belebele"] = "sib-200", 
+         layer_pooling: Literal["MEAN", "HIGHEST", "best"] = "HIGHEST"):
+    if model != "ALL":
+        get_monolingual_task_correlations(model, tgt_lang, task, layer_pooling)
+    else:
+        table_parts = [
+            r"\begin{table}[ht]",
+            r"\centering\footnotesize",
+            r"\begin{tabularx}{\columnwidth}%",
+            r"{p{4em} | C  C  C  C  C  C | C}"
+            r"\toprule",
+        ]
+        is_first = True
+        for model in FULL_MODELS:
+            if not is_first:
+                table_parts.append(r"\midrule")
+            is_first = False
+            table_parts.append(r"\multicolumn{8}{c}{\textbf{" + model.split("/")[1] + r"}} \\")
+            table_parts.append(r"\midrule")
+            corr_table, best_layer_table = get_monolingual_task_correlations(model, tgt_lang, task, layer_pooling, no_print=True)
+            df = pd.DataFrame(corr_table,
+                              index=[REPS_SHORT_NAMES.get(s, s) for s in SENT_REPS],
+                              columns=[METRICS_SHORT_NAMES.get(m, m) for m in METRICS])
+            table_parts.append(df_to_tex(df, label="", grad_command="\\percentGrad", highlight_max=True, cells_only=True, caption=""))
+        table_parts += [
+            r"\bottomrule",
+            r"\end{tabularx}",
+            f"\\caption{{Pearson correlation measured across the \\texttt{{src}} languages of \\texttt{{src-{'en' if tgt_lang == 'en' else '[\\textasciitilde{{}}en]'}}} alignment score and the {'\\textbf{{SIB-200}} \\(F_1\\) score' if task == 'sib-200' else '\\textbf{{Belebele}} accuracy'} in the \\texttt{{src}} language for all models. {'The layer with the highest correlation is selected for each metric and sentence representation.' if layer_pooling == 'best' else ' '} Values are displayed as per cent.}}",
+            f"\\label{{tab:corr-{tgt_lang}-task-{task}-all-{layer_pooling}}}",
+            r"\end{table}"
+        ]
+        os.makedirs("evaluation/tables", exist_ok=True)
+        with open(f"evaluation/tables/corr_with_{task}_all_{tgt_lang}{'-HIGHEST' if layer_pooling == 'HIGHEST' else ''}.tex", "w") as f:
+            f.write("\n".join(table_parts))
+
 if __name__ == "__main__":
     if "snakemake" in globals():
         from snakemake.script import Snakemake
         snakemake: Snakemake
-        main(snakemake.params.model, snakemake.params.tgt_lang, snakemake.params.task)
+        main(snakemake.params.model, snakemake.params.tgt_lang, snakemake.params.task, snakemake.params.layer_pooling)
     else:
         parser = argparse.ArgumentParser(description="Calculate the correlations between the src-tgt and task scores.")
-        parser.add_argument("--model", type=str, help="Model ID.", default="Qwen/Qwen3-14B")
+        parser.add_argument("--model", type=str, help="Model ID.", default="ALL")
         parser.add_argument("--tgt-lang", type=str, help="Target language.", default="en")
         parser.add_argument("--task", type=str, help="Task name.", choices=["sib-200", "belebele"], default="sib-200")
         parser.add_argument("--layer-pooling", type=str, help="Layer pooling method.", choices=["MEAN", "HIGHEST", "best"], default="HIGHEST")

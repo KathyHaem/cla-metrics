@@ -4,8 +4,8 @@
 set -e
 
 python3 -m snakemake --executor slurm \
-    --jobs 40 \
-    --latency-wait 1 \
+    --jobs 400 \
+    --latency-wait 10 \
     --keep-incomplete \
     --use-conda \
     --rerun-incomplete \
@@ -13,12 +13,12 @@ python3 -m snakemake --executor slurm \
     --scheduler ilp --scheduler-ilp-solver PULP_CBC_CMD \
     --resources gpu_use=24 \
     --default-resources tasks=0 slurm_extra='-q low' nodes=1 runtime=1080  \
-    --slurm-jobname-prefix "cla-metrics" \
     --keep-going \
     --retries 2 \
     --slurm-requeue \
+    --slurm-jobname-prefix "cla-metrics" \
     --slurm-no-account \
-    --slurm-exclude-failed-nodes tdll-3gpu2,tdll-8gpu2 \
+    --slurm-exclude-failed-nodes tdll-3gpu2 \
     # --touch \
     # --verbose \
     # --default-resources tasks=0 slurm_extra='-q low --exclude tdll-3gpu3' max_nodes=1 \

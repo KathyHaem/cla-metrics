@@ -14,11 +14,11 @@ def calculate_table(model: str,
          ):
     
     best_rep_per_model = {
-        "Qwen/Qwen3-14B": {
+        "Qwen/Qwen3-14B-Base": {
             "pmi": "weighted-mean",
             "chrf": "mean"
         },
-        "google/gemma-3-12b-pt": {
+        "google/gemma-3-12b-it": {
             "pmi": "weighted-mean",
             "chrf": "prompt"
         },
@@ -28,11 +28,11 @@ def calculate_table(model: str,
         }
     }
     best_metric_per_model = {
-        "Qwen/Qwen3-14B": {
+        "Qwen/Qwen3-14B-Base": {
             "pmi": "cosine",
             "chrf": "anc"
         },
-        "google/gemma-3-12b-pt": {
+        "google/gemma-3-12b-it": {
             "pmi": "cosine",
             "chrf": "anc"
         },
@@ -145,6 +145,6 @@ if __name__ == "__main__":
         calculate_table(snakemake.params.model)
     else:
         parser = argparse.ArgumentParser(description="Calculate the correlation table for PMI.")
-        parser.add_argument("--model", type=str, default="Qwen/Qwen3-14B", help="Model name on Hugging Face.")
+        parser.add_argument("--model", type=str, default="google/gemma-3-12b-it", help="Model name on Hugging Face.")
         args = parser.parse_args()
         calculate_table(args.model)
