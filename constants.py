@@ -2,7 +2,7 @@ ALL_LANGUAGES = ['af', 'am', 'ar', 'az', 'bg', 'bn', 'cs', 'da', 'de', 'el', 'en
                  'hi', 'hu', 'hy', 'id', 'is', 'it', 'ja', 'jv', 'ka', 'km', 'kn', 'ko', 'lt', 'ml', 'mr', 'nl',
                  'pl', 'pt', 'ru', 'sw', 'ta', 'te', 'th', 'tl', 'tr', 'ur', 'vi', 'zh']
 
-mutually_intelligible = {
+MUTUALLY_INTELLIGIBLE = {
     "bg": ["mk"],          # Bulgarian <-> Macedonian (very significantly)
     "mk": ["bg"],
 

@@ -8,7 +8,7 @@ import os
 from typing import Literal
 import json
 
-def load_task_scores(model: str, task: Literal["sib-200", "belebele", "translation", "pmi"], dataset = "flores") -> dict:
+def load_task_scores(model: str, task: Literal["sib-200", "belebele", "translation", "pmi"], dataset: Literal["flores", "bouquet"] = "flores") -> dict:
     match task:
         case "sib-200":
             with open(os.path.join("scores", "sib-200", f"{model.split('/')[1]}.json")) as f:

@@ -67,12 +67,12 @@ def select_24_or_40G(wildcards, base_num_gpus=2):
         
 
 FULL_MODELS = [
-    # "Qwen/Qwen3-14B-Base",
-    # "Qwen/Qwen3-14B",
-    # "mistralai/Ministral-3-14B-Base-2512",
-    # "mistralai/Ministral-3-14B-Instruct-2512",
+    "Qwen/Qwen3-14B-Base",
+    "Qwen/Qwen3-14B",
+    "mistralai/Ministral-3-14B-Base-2512",
+    "mistralai/Ministral-3-14B-Instruct-2512",
     "google/gemma-3-12b-pt",
-    # "google/gemma-3-12b-it"
+    "google/gemma-3-12b-it"
 ]
 
 def short_name(model_id: str) -> str:
@@ -88,22 +88,22 @@ TRANSLATION_DATASETS = ["flores", "bouquet"]
 
 rule all:
     input:
-        # expand("scores/flores/{short}_{sent_rep}_{score}.json",
-        #        short=MODELS.keys(),
-        #        sent_rep=SENT_REPS,
-        #        score=SCORES),
-        # expand("scores/translation_{dataset}_chrf/{short}.json",
-        #        short=MODELS.keys(),
-        #        dataset=TRANSLATION_DATASETS),
+        expand("scores/flores/{short}_{sent_rep}_{score}.json",
+               short=MODELS.keys(),
+               sent_rep=SENT_REPS,
+               score=SCORES),
+        expand("scores/translation_{dataset}_chrf/{short}.json",
+               short=MODELS.keys(),
+               dataset=TRANSLATION_DATASETS),
         expand("scores/translation_{dataset}_mutinf/{short}.json",
                short=MODELS.keys(),
                dataset=TRANSLATION_DATASETS),
-        # expand("scores/dali_belebele/{short}.json",
-        #        short=MODELS.keys()),
-        # expand("scores/belebele/{short}_acc.json",
-        #        short=MODELS.keys()),
-        # expand("scores/sib-200/{short}.json",
-        #        short=MODELS.keys()),
+        expand("scores/dali_belebele/{short}.json",
+               short=MODELS.keys()),
+        expand("scores/belebele/{short}_acc.json",
+               short=MODELS.keys()),
+        expand("scores/sib-200/{short}.json",
+               short=MODELS.keys()),
         # expand("scores/eflomal/{model}.json",
         #        model=MODELS.keys())
 

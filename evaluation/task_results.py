@@ -39,7 +39,7 @@ def main(task: Literal["sib-200", "belebele", "translation"]) -> None:
     fig, ax = plt.subplots(figsize=(6, 3))
     ax.grid(axis="y")
     ax.boxplot(records, positions=positions, widths=0.28, patch_artist=True, boxprops=dict(facecolor="#1f77b4aa"), flierprops=dict(alpha=0.5))
-    ylim = 65 if task == "sib-200" else 40
+    ylim = 65 if task == "sib-200" else 45
     ax.set_ylim(bottom=ylim)
     ax.set_xticks(positions)
     ax.set_xticklabels([""] * len(positions))
