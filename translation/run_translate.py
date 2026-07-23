@@ -76,6 +76,8 @@ def make_few_shot_prefix(reference_src, reference_tgt, is_base=False, is_thinkin
 
 def main(model: str, src_lang: str, langs: list[str], dataset: str = "flores", n_shots: int = 3):
     is_base = "base" in model.lower() or "pt" in model.lower()
+    if is_base:
+        print("Using base model")
     is_thinking = model in ["Qwen/Qwen3-14B"]
     out_path = f"translation/translations_{dataset}/{model.split('/')[1]}_{src_lang}.json"
 
@@ -98,6 +100,7 @@ def main(model: str, src_lang: str, langs: list[str], dataset: str = "flores", n
         reasoning_config=None if not is_thinking else ReasoningConfig(
             reasoning_start_str="<think>",
             reasoning_end_str="</think>"),
+        limit_mm_per_prompt={"image": 0}
         )
     if is_base:
         tokenizer = llm.get_tokenizer()
@@ -167,12 +170,12 @@ if __name__ == "__main__":
     
     else:
         parser = argparse.ArgumentParser(description="Save model embeddings for parallel data")
-        parser.add_argument("--model", type=str, help="Model name. Assuming an HF decoder", default="meta-llama/Llama-3.2-3B")
+        parser.add_argument("--model", type=str, help="Model name. Assuming an HF decoder", default="google/gemma-3-12b-pt")
         parser.add_argument("--src-lang", type=str, help="Language to translate from", default="en")
         parser.add_argument("--langs", type=str, nargs="+", help="Languages to translate into",
                             default=ALL_LANGUAGES)
         parser.add_argument("--dataset", type=str, help="Dataset to use", choices=["flores", "bouquet"], default="flores")
-        parser.add_argument("--n-shots", type=int, help="Number of few-shot examples to use", default=3)
+        parser.add_argument("--n-shots", type=int, help="Number of few-shot examples to use", default=5)
 
         args = parser.parse_args()
         main(args.model, args.src_lang, args.langs, args.dataset, args.n_shots)

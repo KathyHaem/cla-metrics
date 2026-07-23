@@ -2,30 +2,69 @@
 
 # Run with snakemake==9.3.0 snakemake-executor-plugin-slurm==0.14.2
 
-from constants import ALL_LANGUAGES
+from constants import ALL_LANGUAGES, MUTUALLY_INTELLIGIBLE
+import os
+import time
+import random
 import hashlib
 
 CPU_PARTITION="cpu-troja"
 GPU_PARTITION="gpu-troja,gpu-ms"
-GPU_CONSTRAINT="gpuram40G|gpuram48G"
+GPU_CONSTRAINT="gpuram40G"#|gpuram48G"
 GPU_CONSTRAINT_A100="gpuram40G"
 
 def gres_gpu(num):
     return f"--gres 'gpu:{num}'"
 
+def get_free_gpus(node):
+    allocated = os.popen(fr'scontrol show node {node} | grep -Po "AllocTRES[^ ]*(?<=gpu=)\K[0-9]+"').read().strip()
+    if allocated == "":
+        allocated = 0
+    else:
+        allocated = int(allocated)
+    total = int(os.popen(fr'scontrol show node {node} | grep -Po "CfgTRES[^ ]*(?<=gpu=)\K[0-9]+"').read().strip())
+    return total - allocated
+
+assigned_resources = dict()
 def select_24_or_40G(wildcards, base_num_gpus=2):
     key = "_".join(str(v) for v in wildcards.__dict__.values() if isinstance(v, str) or isinstance(v, int))
-    h = int(hashlib.md5(key.encode()).hexdigest(), 16)
-    if h%2 == 0:
-        return {
-            "constraint": "gpuram40G",
-            "num_gpus": base_num_gpus
-        }
-    else:
-        return {
+    hash_key = int(hashlib.md5(key.encode("utf-8")).hexdigest(), 16)
+    
+    use_24G = hash_key % 2 == 0
+    if use_24G:
+        res = {
             "constraint": "gpuram24G",
             "num_gpus": base_num_gpus*2
         }
+    else:
+        res = {
+            "constraint": "gpuram40G",
+            "num_gpus": base_num_gpus
+        }
+
+    return res 
+
+    # nodes = ["tdll-8gpu1", "tdll-8gpu2", "dll-8gpu1", "dll-8gpu2"]
+    # weights = [3, 4, 2, 2]
+
+    # for node in nodes:
+    #     free_gpus = get_free_gpus(node)
+    #     required_gpus = base_num_gpus*(1 if node.startswith("tdll") else 2)
+    #     if free_gpus >= required_gpus:
+    #         res = {
+    #             "constraint": "gpuram40G" if node.startswith("tdll") else "gpuram24G",
+    #             "num_gpus": base_num_gpus*(1 if node.startswith("tdll") else 2)
+    #         }
+    #         break
+    # else:
+    #     res = {
+    #         "constraint": "gpuram40G",
+    #         "num_gpus": base_num_gpus
+    #     }
+
+    # assigned_resources[key] = res
+    # return res
+        
 
 FULL_MODELS = [
     "Qwen/Qwen3-14B-Base",
@@ -80,6 +119,8 @@ rule belebele:
     params:
         model=lambda wildcards: MODELS[wildcards.short],
         langs=ALL_LANGUAGES
+    priority:
+        -1
     conda:
         "envs/vllm.yaml"
     script:
@@ -219,9 +260,9 @@ rule translations_mutinf:
     resources:
         slurm_partition=GPU_PARTITION,
         mem_mb=16000,
-        constraint=lambda wildcards: select_24_or_40G(wildcards)["constraint"], #GPU_CONSTRAINT_A100
-        gpu=lambda wildcards: select_24_or_40G(wildcards)["num_gpus"], #2
-        gpu_use=lambda wildcards: select_24_or_40G(wildcards)["num_gpus"] #2
+        constraint=GPU_CONSTRAINT_A100,
+        gpu=2,
+        gpu_use=2
     params:
         model=lambda wildcards: MODELS[wildcards.short],
         src_lang=lambda wildcards: wildcards.lang,
@@ -284,7 +325,8 @@ rule calc_scores:
         gpu=lambda wildcards: 0 if wildcards.score in ["dist", "ratio", "nn-abs"] else 1,
         gpu_use=lambda wildcards: 0 if wildcards.score in ["dist", "ratio", "nn-abs"] else 1,
         tasks=1,
-        cpus_per_task=lambda wildcards: 10 if wildcards.score in ["dist", "ratio", "nn-abs"] else 2
+        cpus_per_task=lambda wildcards: 10 if wildcards.score in ["dist", "ratio", "nn-abs"] else 2,
+        mutually_intelligible=False
     priority:
         1
     threads:

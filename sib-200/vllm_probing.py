@@ -80,6 +80,7 @@ def main(model_name, langs):
         dtype="bfloat16",
         tensor_parallel_size=torch.cuda.device_count(),
         gpu_memory_utilization=0.8,
+        limit_mm_per_prompt={"image": 0}
         )
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     

@@ -1,5 +1,5 @@
 from monolingual_task_corr import load_task_scores
-from cla_utils import ALL_LANGUAGES, df_to_tex, METRICS, SENT_REPS, REPS_SHORT_NAMES, METRICS_SHORT_NAMES, get_cla_all, get_alignment, get_flores_code
+from cla_utils import ALL_LANGUAGES, df_to_tex, METRICS, SENT_REPS, REPS_SHORT_NAMES, METRICS_SHORT_NAMES, get_cla_all, get_alignment, get_flores_code, FULL_MODELS
 from scipy.stats import pearsonr
 import pandas as pd
 import os
@@ -10,35 +10,60 @@ from typing import Literal
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 def calculate_table(model: str, 
+         dataset: Literal["flores", "bouquet"] = "flores",
          layer_pooling: Literal["MEAN", "HIGHEST", "best"] = "HIGHEST",
          ):
     
     best_rep_per_model = {
+        "Qwen/Qwen3-14B-Base": {
+            "pmi": "weighted-mean",
+            "chrf": "weighted-mean"
+        },
         "Qwen/Qwen3-14B": {
             "pmi": "weighted-mean",
-            "chrf": "mean"
+            "chrf": "fewshot"
         },
         "google/gemma-3-12b-pt": {
-            "pmi": "weighted-mean",
+            "pmi": "last-token",
             "chrf": "prompt"
+        },
+        "google/gemma-3-12b-it": {
+            "pmi": "weighted-mean",
+            "chrf": "fewshot"
         },
         "mistralai/Ministral-3-14B-Base-2512": {
             "pmi": "weighted-mean",
             "chrf": "last-token"
+        },
+        "mistralai/Ministral-3-14B-Instruct-2512": {
+            "pmi": "weighted-mean",
+            "chrf": "mean"
         }
     }
     best_metric_per_model = {
+        "Qwen/Qwen3-14B-Base": {
+            "pmi": "cosine",
+            "chrf": "anc"
+        },
         "Qwen/Qwen3-14B": {
             "pmi": "cosine",
             "chrf": "anc"
         },
         "google/gemma-3-12b-pt": {
+            "pmi": "anc",
+            "chrf": "anc"
+        },
+        "google/gemma-3-12b-it": {
             "pmi": "cosine",
             "chrf": "anc"
         },
         "mistralai/Ministral-3-14B-Base-2512": {
             "pmi": "ratio",
-            "chrf": "ratio"
+            "chrf": "nn-abs"
+        },
+        "mistralai/Ministral-3-14B-Instruct-2512": {
+            "pmi": "nn-abs",
+            "chrf": "eflomal"
         }
     }
 
@@ -48,8 +73,8 @@ def calculate_table(model: str,
 
 
     cla_all = get_cla_all(model.split("/")[1])
-    task_scores_pmi = load_task_scores(model, "pmi")
-    task_scores_chrf = load_task_scores(model, "translation")
+    task_scores_pmi = load_task_scores(model, "pmi", dataset=dataset)
+    task_scores_chrf = load_task_scores(model, "translation", dataset=dataset)
 
     lang_pairs = [f"{src}-{tgt}" for src in ALL_LANGUAGES_NO_EN for tgt in ALL_LANGUAGES_NO_EN if src != tgt]
     translation_pmis = np.array([task_scores_pmi[lang_pair] for lang_pair in lang_pairs])
@@ -132,19 +157,28 @@ def calculate_table(model: str,
     ax[1].set_xlabel(f"Combined alignments")
     ax[1].xaxis.set_major_formatter(FormatStrFormatter("%.1f"))
     ax[1].yaxis.set_major_formatter(FormatStrFormatter("%.1f"))
+    suptitle = fig.suptitle(f"Model: {model.split('/')[1]}, Dataset: {dataset.capitalize()}")
+    suptitle.set(fontsize=18)
     plt.tight_layout()
     os.makedirs("evaluation/plots", exist_ok=True)
-    plt.savefig(f"evaluation/plots/pmi_vs_chrf_{model.split('/')[1]}_{layer_pooling}.pdf", pad_inches=0, bbox_inches=0)
+    plt.savefig(f"evaluation/plots/pmi_vs_chrf_{model.split('/')[1]}_{layer_pooling}{'_' + dataset if dataset != 'flores' else ''}.pdf", pad_inches=0, bbox_inches=0)
     plt.close()
 
+
+def main():
+    for model in FULL_MODELS:
+        for dataset in ["flores", "bouquet"]:
+            calculate_table(model, dataset=dataset)
     
 if __name__ == "__main__":
-    if "snakemake" in globals():
-        from snakemake.script import Snakemake
-        snakemake: Snakemake
-        calculate_table(snakemake.params.model)
-    else:
-        parser = argparse.ArgumentParser(description="Calculate the correlation table for PMI.")
-        parser.add_argument("--model", type=str, default="Qwen/Qwen3-14B", help="Model name on Hugging Face.")
-        args = parser.parse_args()
-        calculate_table(args.model)
+    main()
+    # if "snakemake" in globals():
+    #     from snakemake.script import Snakemake
+    #     snakemake: Snakemake
+    #     calculate_table(snakemake.params.model, snakemake.params.dataset)
+    # else:
+    #     parser = argparse.ArgumentParser(description="Calculate the correlation table for PMI.")
+    #     parser.add_argument("--model", type=str, default="mistralai/Ministral-3-14B-Instruct-2512", help="Model name on Hugging Face.")
+    #     parser.add_argument("--dataset", type=str, default="bouquet", help="Dataset to use for evaluation.")
+    #     args = parser.parse_args()
+    #     calculate_table(args.model, args.dataset)

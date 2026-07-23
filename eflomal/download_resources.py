@@ -1,4 +1,5 @@
 from huggingface_hub import hf_hub_download, snapshot_download
+from datasets import load_dataset, Dataset
 import os
 import sys
 import argparse
@@ -15,11 +16,11 @@ def main(model_id: str, resource: str):
             hf_hub_download(repo_id=model_id, filename="config.json",
                             local_dir=dir_name)
         case "dataset":
-            dir_name_flores = f"eflomal/computations/dataset/flores"
+            dir_name_flores = f"eflomal/computations/dataset/flores/all"
             os.makedirs(dir_name_flores, exist_ok=True)
-            print(hf_hub_download("facebook/flores", subfolder="all",
-                            filename="flores-dev.parquet", repo_type="dataset",
-                            revision="refs/convert/parquet", local_dir=dir_name_flores), file=sys.stderr)
+            dataset: Dataset = load_dataset("facebook/flores", "all", split="dev")
+            dataset.to_parquet(f"{dir_name_flores}/flores-dev.parquet")
+
 if __name__ == "__main__":
     if "snakemake" in globals():
         from snakemake.script import Snakemake

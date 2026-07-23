@@ -29,10 +29,15 @@ METRICS_SHORT_NAMES = {
 }
 
 FULL_MODELS = [
+    "Qwen/Qwen3-14B-Base",
     "Qwen/Qwen3-14B",
     "google/gemma-3-12b-pt",
+    "google/gemma-3-12b-it",
     "mistralai/Ministral-3-14B-Base-2512",
+    "mistralai/Ministral-3-14B-Instruct-2512",
 ]
+
+MODEL_FAMILIES = ["Qwen3", "gemma-3", "Ministral-3"]
 
 # shorten models: "mistralai/Ministral-3-14B-Base-2512" -> "Ministral-3"
 SHORT_MODELS = [re.search(r"([A-Za-z]+[^a-zA-Z\d\s:]?[0-9]+).*", model.split("/")[1]).group(1) for model in FULL_MODELS]
@@ -165,6 +170,7 @@ def df_to_tex(df: pd.DataFrame,
               highlight_max=False,
               highlight_max_in_each_row=False,
               eflomal_in_last_col=True,
+              cells_only=False,
               custom_colspec="",
               custom_header="",
               rounding_digits=1) -> str:
@@ -189,6 +195,8 @@ def df_to_tex(df: pd.DataFrame,
     :type highlight_max_in_each_row: bool
     :param eflomal_in_last_col: Is Eflomal column in the last column?
     :type eflomal_in_last_col: bool
+    :param cells_only: Only print the cells, without the tabularx environment and caption?
+    :type cells_only: bool
     :param custom_colspec: Custom column specification for the tabularx environment.
     :type custom_colspec: str
     :param custom_header: Custom header for the table.
@@ -242,16 +250,18 @@ def df_to_tex(df: pd.DataFrame,
     if (heatmap and grad_command_defined) or highlight_max:
         max_value = df.max(axis=None)*100
     lines = []
-    if heatmap and grad_command_defined:
-        lines.append(f'\\newcommand{{{grad_command}}}[2]{{\\gradientcell{{#1}}{{{df.min(axis=None)*100}}}{{{max_value}}}{{cyan}}{{yellow}}{{70}}{{#2}}}}')
-    
+    if not cells_only:
+        if heatmap and grad_command_defined:
+            lines.append(f'\\newcommand{{{grad_command}}}[2]{{\\gradientcell{{#1}}{{{df.min(axis=None)*100}}}{{{max_value}}}{{cyan}}{{yellow}}{{70}}{{#2}}}}')
+        lines += [
+            r'\setlength{\tabcolsep}{4.5pt}',
+            r'\begin{table}[ht]',
+            r'    \centering\footnotesize',
+            f'    \\begin{{tabularx}}{{\\columnwidth}}%',
+            custom_colspec if custom_colspec else f'    {{{"p{4em} | " if use_index_column else ""}{("  ".join(["C"] * (len(df.columns) - 1)) + (" | C" if eflomal_in_last_col else "  C"))}}}',
+            r'        \toprule',
+        ]
     lines += [
-        r'\setlength{\tabcolsep}{4.5pt}',
-        r'\begin{table}[ht]',
-        r'    \centering\footnotesize',
-        f'    \\begin{{tabularx}}{{\\columnwidth}}%',
-        custom_colspec if custom_colspec else f'    {{{"p{4em} | " if use_index_column else ""}{("  ".join(["C"] * (len(df.columns) - 1)) + (" | C" if eflomal_in_last_col else "  C"))}}}',
-        r'        \toprule',
         custom_header if custom_header else f'        {" & " if use_index_column else ""}{" & ".join([f"\\textbf{{{col}}}" for col in df.columns])} \\\\',
         r'        \midrule'
     ]
@@ -262,19 +272,20 @@ def df_to_tex(df: pd.DataFrame,
 
         ]
     
-    lines += [
-        r'        \bottomrule',
-        r'    \end{tabularx}',
-        f'    \\caption{{{caption}}}',
-        f'    \\label{{tab:{label}}}',
-        r'\end{table}'
-    ]
+    if not cells_only:
+        lines += [
+            r'        \bottomrule',
+            r'    \end{tabularx}',
+            f'    \\caption{{{caption}}}',
+            f'    \\label{{tab:{label}}}',
+            r'\end{table}'
+        ]
 
     return "\n".join(lines)
 
 
-def get_translation_scores(model: str, metric: Literal["chrf", "mutinf"]) -> dict:
-    with open(os.path.join("scores", f"translation_{metric}", f"{model}.json")) as f:
+def get_translation_scores(model: str, metric: Literal["chrf", "mutinf"], dataset: str = "flores") -> dict:
+    with open(os.path.join("scores", f"translation_{dataset}_{metric}", f"{model}.json")) as f:
         pmi_dict = json.load(f)
 
     return {k: v["mean"] for k, v in pmi_dict.items()}
