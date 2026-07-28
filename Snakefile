@@ -8,10 +8,17 @@ import time
 import random
 import hashlib
 
-CPU_PARTITION="cpu-troja"
-GPU_PARTITION="gpu-troja,gpu-ms"
-GPU_CONSTRAINT="gpuram40G"#|gpuram48G"
-GPU_CONSTRAINT_A100="gpuram40G"
+# ---- troja resources ----
+# CPU_PARTITION="cpu-troja"
+# GPU_PARTITION="gpu-troja,gpu-ms"
+# GPU_CONSTRAINT="gpuram40G"#|gpuram48G"
+# GPU_CONSTRAINT_A100="gpuram40G"
+
+# ---- lrz resources ----
+CPU_PARTITION="lrz-cpu"
+GPU_PARTITION="lrz-dgx-a100-80x8"
+GPU_CONSTRAINT=""
+GPU_CONSTRAINT_A100=""
 
 def gres_gpu(num):
     return f"--gres 'gpu:{num}'"
@@ -86,6 +93,11 @@ SENT_REPS = ["mean", "weighted-mean", "prompt", "last-token", "fewshot"]
 
 TRANSLATION_DATASETS = ["flores", "bouquet"]
 
+# TSI (Triplet Similarity Index) is not yet part of the full SCORES/rule-all sweep;
+# run it standalone against a couple of models first via snakemake_tsi.sh.
+TSI_MODELS = ["Qwen3-14B-Base", "gemma-3-12b-pt"]
+TSI_SCORES = ["tsi", "tsi-cosine"]
+
 rule all:
     input:
         expand("scores/flores/{short}_{sent_rep}_{score}.json",
@@ -106,6 +118,13 @@ rule all:
                short=MODELS.keys()),
         # expand("scores/eflomal/{model}.json",
         #        model=MODELS.keys())
+
+rule tsi:
+    input:
+        expand("scores/flores/{short}_{sent_rep}_{score}.json",
+               short=TSI_MODELS,
+               sent_rep=SENT_REPS,
+               score=TSI_SCORES)
 
 rule belebele:
     output:
@@ -319,13 +338,13 @@ rule calc_scores:
     output:
         "scores/flores/{short}_{sent_rep}_{score}.json"
     resources:
-        slurm_partition=lambda wildcards: CPU_PARTITION if wildcards.score in ["dist", "ratio", "nn-abs"] else GPU_PARTITION,
+        slurm_partition=lambda wildcards: CPU_PARTITION if wildcards.score in ["dist", "ratio", "nn-abs", "tsi", "tsi-cosine", "tsi_approx", "tsi_approx-cosine"] else GPU_PARTITION,
         mem_mb=16000,
-        constraint=lambda wildcards: "" if wildcards.score in ["dist", "ratio", "nn-abs"] else GPU_CONSTRAINT,
-        gpu=lambda wildcards: 0 if wildcards.score in ["dist", "ratio", "nn-abs"] else 1,
-        gpu_use=lambda wildcards: 0 if wildcards.score in ["dist", "ratio", "nn-abs"] else 1,
+        constraint=lambda wildcards: "" if wildcards.score in ["dist", "ratio", "nn-abs", "tsi", "tsi-cosine", "tsi_approx", "tsi_approx-cosine"] else GPU_CONSTRAINT,
+        gpu=lambda wildcards: 0 if wildcards.score in ["dist", "ratio", "nn-abs", "tsi", "tsi-cosine", "tsi_approx", "tsi_approx-cosine"] else 1,
+        gpu_use=lambda wildcards: 0 if wildcards.score in ["dist", "ratio", "nn-abs", "tsi", "tsi-cosine", "tsi_approx", "tsi_approx-cosine"] else 1,
         tasks=1,
-        cpus_per_task=lambda wildcards: 10 if wildcards.score in ["dist", "ratio", "nn-abs"] else 2,
+        cpus_per_task=lambda wildcards: 10 if wildcards.score in ["dist", "ratio", "nn-abs", "tsi", "tsi-cosine", "tsi_approx", "tsi_approx-cosine"] else 2,
         mutually_intelligible=False
     priority:
         1

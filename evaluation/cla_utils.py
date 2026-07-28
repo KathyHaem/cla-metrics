@@ -10,7 +10,7 @@ from langcodes import Language
 
 from constants import ALL_LANGUAGES
 
-METRICS = ["cosine", "anc", "nn-abs", "dist", "ratio", "dali", "eflomal"]
+METRICS = ["cosine", "anc", "tsi", "tsi-cosine", "nn-abs", "dist", "ratio", "dali", "eflomal"]
 SENT_REPS = ["fewshot", "last-token", "weighted-mean", "mean", "prompt"]
 
 REPS_SHORT_NAMES = {
@@ -21,6 +21,8 @@ REPS_SHORT_NAMES = {
 METRICS_SHORT_NAMES = {
     "cosine": "cos",
     "anc": "ANC",
+    "tsi": "TSI (eucl)",
+    "tsi-cosine": "TSI (cos)",
     "nn-abs": "abs",
     "dist": "dist",
     "ratio": "ratio",

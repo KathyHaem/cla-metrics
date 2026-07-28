@@ -12,6 +12,7 @@ from transformers import AutoConfig
 
 from anc.anc_scoring import anc_score
 from constants import ALL_LANGUAGES, MUTUALLY_INTELLIGIBLE
+from tsi.tsi_scoring import tsi_score, tsi_score_approx
 from xsim.xsim import Margin, calculate_error
 
 
@@ -34,7 +35,8 @@ def cosine_sim(src_layer: torch.Tensor, tgt_layer: torch.Tensor):
 def calculate_score(src_layer: torch.Tensor, tgt_layer: torch.Tensor, score: str):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    if score in ("dist", "ratio", "nn-abs"):
+    if score in ("dist", "ratio", "nn-abs", "tsi", "tsi-cosine", "tsi_approx", "tsi_approx-cosine"):
+        # tsi/tsi_approx are pure numpy/scipy (Kendall's tau), so they need CPU arrays too.
         # I tried to make xsim work on GPU but it actually got slower. The best option is to use more CPUs.
         torch.set_float32_matmul_precision('high')
         src_layer = src_layer.to(dtype=torch.float32, device="cpu").numpy()
@@ -48,6 +50,14 @@ def calculate_score(src_layer: torch.Tensor, tgt_layer: torch.Tensor, score: str
             return cosine_sim(src_layer, tgt_layer)
         case "anc":
             return anc_score(src_layer, tgt_layer)
+        case "tsi":
+            return tsi_score(src_layer, tgt_layer, metric="euclidean")
+        case "tsi-cosine":
+            return tsi_score(src_layer, tgt_layer, metric="cosine")
+        case "tsi_approx":
+            return tsi_score_approx(src_layer, tgt_layer, metric="euclidean")
+        case "tsi_approx-cosine":
+            return tsi_score_approx(src_layer, tgt_layer, metric="cosine")
         case "dist":
             # this is an xsim score, based on nearest neighbours -> needs faiss
             error_abs, num, _ = calculate_error(x=src_layer, y=tgt_layer, margin=Margin.DISTANCE.value)
@@ -123,7 +133,8 @@ if __name__ == "__main__":
         parser.add_argument("--model", type=str, required=True, help="Model name. Assuming an HF decoder")
         parser.add_argument("--dataset", type=str, default="flores")
         parser.add_argument("--score", type=str, nargs="+", default=["cosine"],
-                            choices=["cosine", "anc", "dist", "ratio", "nn-abs"])
+                            choices=["cosine", "anc", "tsi", "tsi-cosine", "tsi_approx", "tsi_approx-cosine",
+                                     "dist", "ratio", "nn-abs"])
         parser.add_argument("--sent-rep", type=str, default="mean", help="How to sentence rep",
                             choices=["mean", "prompt", "fewshot", "last-token", "weighted-mean"])
         parser.add_argument("--mutually-intelligible", action="store_true", default=False, help="Only consider mutually intelligible language pairs")

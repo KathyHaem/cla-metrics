@@ -9,3 +9,4 @@ embeds/
 .vscode
 .snakemake
 .env
+.venv/
