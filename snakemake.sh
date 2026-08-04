@@ -18,8 +18,7 @@ python3 -m snakemake --executor slurm \
     --slurm-requeue \
     --slurm-jobname-prefix "cla-metrics" \
     --slurm-no-account \
-    --slurm-exclude-failed-nodes tdll-3gpu2 \
+    # --slurm-exclude-failed-nodes ... \
     # --dry-run \
     # --touch \
     # --verbose \
-    # --default-resources tasks=0 slurm_extra='-q low --exclude tdll-3gpu3' max_nodes=1 \

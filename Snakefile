@@ -1,6 +1,6 @@
 # Snakefile
 
-# Run with snakemake==9.3.0 snakemake-executor-plugin-slurm==0.14.2
+# Run with snakemake==9.20.0 snakemake-executor-plugin-slurm==2.6.1
 
 from constants import ALL_LANGUAGES, MUTUALLY_INTELLIGIBLE
 import os
@@ -8,9 +8,10 @@ import time
 import random
 import hashlib
 
-CPU_PARTITION="cpu-troja"
-GPU_PARTITION="gpu-troja,gpu-ms"
-GPU_CONSTRAINT="gpuram40G"#|gpuram48G"
+# NOTE: edit these to suit your cluster configuration.
+CPU_PARTITION="cpu-part"
+GPU_PARTITION="gpu-part"
+GPU_CONSTRAINT="gpuram40G|gpuram48G"
 GPU_CONSTRAINT_A100="gpuram40G"
 
 def gres_gpu(num):
@@ -44,26 +45,6 @@ def select_24_or_40G(wildcards, base_num_gpus=2):
 
     return res 
 
-    # nodes = ["tdll-8gpu1", "tdll-8gpu2", "dll-8gpu1", "dll-8gpu2"]
-    # weights = [3, 4, 2, 2]
-
-    # for node in nodes:
-    #     free_gpus = get_free_gpus(node)
-    #     required_gpus = base_num_gpus*(1 if node.startswith("tdll") else 2)
-    #     if free_gpus >= required_gpus:
-    #         res = {
-    #             "constraint": "gpuram40G" if node.startswith("tdll") else "gpuram24G",
-    #             "num_gpus": base_num_gpus*(1 if node.startswith("tdll") else 2)
-    #         }
-    #         break
-    # else:
-    #     res = {
-    #         "constraint": "gpuram40G",
-    #         "num_gpus": base_num_gpus
-    #     }
-
-    # assigned_resources[key] = res
-    # return res
         
 
 FULL_MODELS = [
