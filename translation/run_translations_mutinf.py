@@ -14,6 +14,16 @@ import os
 
 torch._dynamo.config.capture_scalar_outputs = True
 
+
+def get_attn_implementation() -> str:
+    """Use flash-attention if the package is installed, else fall back to PyTorch's SDPA."""
+    try:
+        import flash_attn  # noqa: F401
+        return "flash_attention_2"
+    except ImportError:
+        return "sdpa"
+
+
 def get_flores_code(short_code: str, dataset: str):
     custom_codes = {
         "ar": "arb_Arab",
@@ -188,8 +198,6 @@ def get_batch_mutinf(sources: list[str],
     ans_loglik = loglik_from_logits(logits, answers_mask, tok_ids, debug=debug)
     mutinf = ans_loglik - ans_prior_loglik
 
-
-
     return mutinf, answers_mask.sum(-1)
 
 @torch.no_grad()
@@ -209,10 +217,11 @@ def main(model_id: str, src_lang: str, target_langs: list[str], dataset: str, ba
 
 
     torch.set_float32_matmul_precision('high')
+    attn_implementation = get_attn_implementation()
     try:
-        model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+        model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation=attn_implementation, dtype=torch.bfloat16)
     except ValueError:
-        model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+        model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto", attn_implementation=attn_implementation, dtype=torch.bfloat16)
     model.eval()
     tokenizer = AutoTokenizer.from_pretrained(model_id, fix_mistral_regex=True)
     tokenizer.pad_token = tokenizer.eos_token
@@ -282,8 +291,6 @@ def main(model_id: str, src_lang: str, target_langs: list[str], dataset: str, ba
     if not debug:
         with open(out_path, "w") as f:
             json.dump(result_dict, f, indent=True, ensure_ascii=False)
-                
-            
 
 
 if __name__ == "__main__":

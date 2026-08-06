@@ -11,6 +11,7 @@ from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM, AutoMod
 
 from save_embeds_fewshot import get_fewshot_embeds
 
+from attn_utils import get_attn_implementation
 from constants import SENT_SUMM_TEMPLATE, ALL_LANGUAGES
 
 
@@ -92,10 +93,11 @@ def main(dataset_name, model_name, langs, sent_rep, batch_size, overwrite=False)
         raise NotImplementedError
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, fix_mistral_regex=True)
+    attn_implementation = get_attn_implementation()
     try:
-        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", attn_implementation=attn_implementation, dtype=torch.bfloat16)
     except ValueError:
-        model = AutoModelForImageTextToText.from_pretrained(model_name, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+        model = AutoModelForImageTextToText.from_pretrained(model_name, device_map="auto", attn_implementation=attn_implementation, dtype=torch.bfloat16)
     model.eval()
     if "num_hidden_layers" not in model.config:
         model.config.num_hidden_layers = model.config.text_config.num_hidden_layers

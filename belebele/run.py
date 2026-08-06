@@ -13,6 +13,15 @@ import os
 import argparse
 
 from datasets.utils.logging import set_verbosity_error
+
+
+def get_attn_implementation() -> str:
+    """Use flash-attention if the package is installed, else fall back to PyTorch's SDPA."""
+    try:
+        import flash_attn  # noqa: F401
+        return "flash_attention_2"
+    except ImportError:
+        return "sdpa"
 set_verbosity_error()
 
 def get_flores_code(short_code: str):
@@ -108,10 +117,11 @@ def compute_answers_logliks(
 
 def main(model_id, langs, batch_size, max_samples = None):
     torch.set_float32_matmul_precision('medium')
+    attn_implementation = get_attn_implementation()
     try:
-        model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+        model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", attn_implementation=attn_implementation, dtype=torch.bfloat16)
     except ValueError:
-        model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto", attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+        model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto", attn_implementation=attn_implementation, dtype=torch.bfloat16)
     model = torch.compile(model)
     model.eval()
     tokenizer = AutoTokenizer.from_pretrained(model_id, fix_mistral_regex=True)

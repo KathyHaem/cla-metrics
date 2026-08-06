@@ -10,6 +10,16 @@ import os
 from datasets.utils.logging import set_verbosity_error
 set_verbosity_error()
 
+
+def get_attn_implementation() -> str:
+    """Use flash-attention if the package is installed, else fall back to PyTorch's SDPA."""
+    try:
+        import flash_attn  # noqa: F401
+        return "flash_attention_2"
+    except ImportError:
+        return "sdpa"
+
+
 def get_flores_code(short_code: str):
     custom_codes = {
         "ar": "arb_Arab",
@@ -73,12 +83,13 @@ def compute_representations(
     return options_emb
 
 def main(model_id, lang, batch_size=10):
+    attn_implementation = get_attn_implementation()
     try:
         model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto",
-                                                     attn_implementation="flash_attention_2", dtype=torch.bfloat16)
+                                                     attn_implementation=attn_implementation, dtype=torch.bfloat16)
     except ValueError:
         model = AutoModelForImageTextToText.from_pretrained(model_id, device_map="auto",
-                                                            attn_implementation="flash_attention_2",
+                                                            attn_implementation=attn_implementation,
                                                             dtype=torch.bfloat16)
     # model = torch.compile(model)
     model.eval()
