@@ -4,7 +4,6 @@ import os
 import pickle
 from collections import defaultdict
 
-import numpy as np
 import torch
 from torch.nn.functional import cosine_similarity
 from tqdm import tqdm
@@ -35,9 +34,9 @@ def cosine_sim(src_layer: torch.Tensor, tgt_layer: torch.Tensor):
 def calculate_score(src_layer: torch.Tensor, tgt_layer: torch.Tensor, score: str):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    if score in ("dist", "ratio", "nn-abs", "tsi", "tsi-cosine", "tsi_approx", "tsi_approx-cosine"):
-        # tsi/tsi_approx are pure numpy/scipy (Kendall's tau), so they need CPU arrays too.
-        # I tried to make xsim work on GPU but it actually got slower. The best option is to use more CPUs.
+    if score in ("dist", "ratio", "nn-abs", "tsi", "tsi-cosine"):
+        # dist/ratio/nn-abs use faiss; tried GPU for those, it got slower there. tsi/tsi-cosine are
+        # the exact algorithm, which needs scipy's Kendall's tau (CPU-only) -- so both need CPU arrays.
         torch.set_float32_matmul_precision('high')
         src_layer = src_layer.to(dtype=torch.float32, device="cpu").numpy()
         tgt_layer = tgt_layer.to(dtype=torch.float32, device="cpu").numpy()
