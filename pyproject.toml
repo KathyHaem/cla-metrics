@@ -1,0 +1,39 @@
+[project]
+name = "cla-metrics"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "datasets",
+    "faiss-cpu",
+    "langcodes",
+    "matplotlib",
+    "scipy",
+    "scipy-stubs~=1.18.0",
+    "seqeval",
+    "torch==2.11.0",
+    "tqdm",
+    "vllm==0.25.1",
+    "transformers>=5.12.1",
+    "datasets==4.3.0",
+    "accelerate==1.11.0",
+    "numpy==2.2.6",
+    "kernels==0.12.0"
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
+[tool.uv]
+index-strategy = "unsafe-best-match"
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu129"
+priority = "supplemental"
+
+[tool.uv.workspace]
+members = [
+    "mt-metrics-eval",
+]

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --mem=4G
+#SBATCH --mem=32G
 #SBATCH --time=1-00:00:00
 #SBATCH --partition=lrz-hgx-h100-94x4
 #SBATCH --gres=gpu:1
@@ -25,8 +25,7 @@ for full_model in "${TSI_MODELS[@]}"; do
             --model "$full_model" \
             --sent-rep "$rep" \
             --dataset "flores" \
-            --batch-size 16 \
-            --overwrite False
+            --batch-size 16
     done
 done
 
@@ -39,8 +38,7 @@ for full_model in "${TSI_MODELS[@]}"; do
                 --model "$full_model" \
                 --sent-rep "$rep" \
                 --score "${TSI_SCORES[@]}" \
-                --dataset "flores" \
-                --overwrite False
+                --dataset "flores"
         done
     done
 done
