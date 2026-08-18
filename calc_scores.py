@@ -3,6 +3,7 @@ import json
 import os
 import pickle
 from collections import defaultdict
+from datetime import datetime
 
 import torch
 from torch.nn.functional import cosine_similarity
@@ -13,6 +14,10 @@ from anc.anc_scoring import anc_score
 from constants import ALL_LANGUAGES, MUTUALLY_INTELLIGIBLE
 from tsi.tsi_scoring import tsi_score, tsi_score_approx
 from xsim.xsim import Margin, calculate_error
+
+
+def log(*args):
+    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}]", *args)
 
 
 def load_embeds(model_name, dataset_name, sent_rep, lang):
@@ -75,7 +80,7 @@ def collect_score(model, dataset, config, score, sent_rep, mutually_intelligible
     scores = defaultdict(list)  # keys are lang pairs, lists are one score per layer
     num_layers = config.num_hidden_layers + 1
     for src_lang in ALL_LANGUAGES if not mutually_intelligible else MUTUALLY_INTELLIGIBLE:
-        print("Processing language", src_lang)
+        log("Processing language", src_lang)
         src_embeds = load_embeds(model, dataset, sent_rep, src_lang)
         
         tgt_set = ALL_LANGUAGES if not mutually_intelligible else MUTUALLY_INTELLIGIBLE[src_lang]
@@ -107,7 +112,7 @@ def main(model, dataset, sent_rep, requested_scores, mutually_intelligible=False
     for score in requested_scores:
         out_filename = f"{out_path}/{model_short_name}_{sent_rep}{'_mutually_intelligible' if mutually_intelligible else ''}_{score}.json"
         if os.path.exists(out_filename) and not overwrite:
-            print(f"Already collected {score} scores. Skipping.")
+            log(f"Already collected {score} scores. Skipping.")
             continue
 
         scores = collect_score(model, dataset, config, score, sent_rep, mutually_intelligible=mutually_intelligible)
